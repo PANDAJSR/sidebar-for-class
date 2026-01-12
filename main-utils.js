@@ -2,7 +2,44 @@ const { app, shell, screen, ipcMain } = require('electron');
 const path = require('path');
 const { spawn, execSync, execFile } = require('child_process');
 const fs = require('fs');
-const loudness = require('loudness');
+
+const volumeControlExe = path.join(__dirname, 'VolumeControl.exe');
+
+function ensureVolumeControlExe() {
+    if (fs.existsSync(volumeControlExe)) return true;
+    try {
+        console.log('Compiling VolumeControl.exe...');
+        const frameworkPath = 'C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe';
+        if (fs.existsSync(frameworkPath)) {
+            execSync(`"${frameworkPath}" /out:"${volumeControlExe}" "${path.join(__dirname, 'VolumeControl.cs')}"`);
+            return fs.existsSync(volumeControlExe);
+        }
+    } catch (e) {
+        console.error('Compilation failed:', e);
+    }
+    return false;
+}
+
+// 尝试初始化编译
+ensureVolumeControlExe();
+
+async function runVolumeControl(args) {
+    return new Promise((resolve, reject) => {
+        if (!fs.existsSync(volumeControlExe)) {
+            if (!ensureVolumeControlExe()) {
+                reject(new Error('VolumeControl.exe not found and compilation failed'));
+                return;
+            }
+        }
+        execFile(volumeControlExe, args, (error, stdout, stderr) => {
+            if (error) {
+                reject(error);
+                return;
+            }
+            resolve(stdout.trim());
+        });
+    });
+}
 
 /**
  * 从 URI 协议中解析出关联的可执行文件路径
@@ -43,8 +80,9 @@ function getExePathFromProtocol(protocol) {
  */
 async function getSystemVolume() {
     try {
-        const volume = await loudness.getVolume();
-        return volume;
+        const stdout = await runVolumeControl(['get']);
+        const vol = parseInt(stdout, 10);
+        return isNaN(vol) ? 0 : vol;
     } catch (error) {
         console.error('Failed to get system volume:', error);
         return 0;
@@ -67,7 +105,7 @@ async function setSystemVolume(value) {
 
     isSettingVolume = true;
     try {
-        await loudness.setVolume(value);
+        await runVolumeControl(['set', Math.round(value).toString()]);
     } catch (error) {
         console.error('Failed to set system volume:', error);
     } finally {
