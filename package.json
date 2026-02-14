@@ -65,6 +65,7 @@
     "@monaco-editor/react": "^4.7.0",
     "canvas": "^3.2.1",
     "loudness": "^0.4.2",
+    "mdui": "^2.1.4",
     "screenshot-desktop": "^1.15.3",
     "sharp": "^0.34.5"
   }

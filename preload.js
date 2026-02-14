@@ -8,6 +8,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // 调整窗口大小
     resizeWindow: (width, height, y, animate) => ipcRenderer.send('resize-window', width, height, y, animate),
 
+    // 实时调整窗口大小（用于拖拽调整）
+    resizeWindowRealtime: (width, height) => ipcRenderer.send('resize-window-realtime', width, height),
+
     // 设置鼠标穿透（预留接口）
     setIgnoreMouse: (ignore, forward) => ipcRenderer.send('set-ignore-mouse', ignore, forward),
 

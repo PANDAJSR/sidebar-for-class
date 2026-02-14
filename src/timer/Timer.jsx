@@ -261,6 +261,7 @@ const Timer = () => {
           </button>
         </div>
       )}
+
     </div>
   );
 };

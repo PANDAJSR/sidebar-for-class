@@ -86,6 +86,25 @@ function registerIPCHandlers() {
     }
   });
 
+  // 实时调整窗口大小（用于拖拽调整，保持最小尺寸限制）
+  ipcMain.on('resize-window-realtime', (event, width, height) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win || win.isDestroyed()) return;
+
+    // 确保不小于最小尺寸
+    const minSize = win.getMinimumSize();
+    const finalWidth = Math.max(minSize[0] || 300, Math.floor(width));
+    const finalHeight = Math.max(minSize[1] || 150, Math.floor(height));
+
+    const bounds = win.getBounds();
+    win.setBounds({
+      x: bounds.x,
+      y: bounds.y,
+      width: finalWidth,
+      height: finalHeight
+    });
+  });
+
   ipcMain.on('set-ignore-mouse', (event, ignore, forward) => {
     setIgnoreMouseEvents(ignore, forward);
   });

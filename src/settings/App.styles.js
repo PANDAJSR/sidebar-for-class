@@ -16,8 +16,9 @@ export const useStyles = makeStyles({
     },
     // 侧边栏样式：左侧导航栏
     sidebar: {
-        width: '280px',
-        ...shorthands.padding('8px', '4px', '12px', '4px'),
+        width: 'auto',
+        minWidth: 'fit-content',
+        ...shorthands.padding('8px', '0', '12px', '0'),
         display: 'flex',
         flexDirection: 'column',
         backgroundColor: 'var(--colorNeutralBackground2)',
