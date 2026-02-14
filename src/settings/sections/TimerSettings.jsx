@@ -11,7 +11,8 @@ import {
     Card,
     Label,
     Dropdown,
-    Option
+    Option,
+    Switch
 } from "@fluentui/react-components";
 
 const TimerSettings = ({ config, updateConfig, styles }) => {
@@ -35,6 +36,17 @@ const TimerSettings = ({ config, updateConfig, styles }) => {
             timer: {
                 ...timerConfig,
                 enable_animations: value
+            }
+        };
+        updateConfig(newConfig);
+    };
+
+    const handleSoundChange = (checked) => {
+        const newConfig = {
+            ...config,
+            timer: {
+                ...timerConfig,
+                enable_sound: checked
             }
         };
         updateConfig(newConfig);
@@ -112,6 +124,19 @@ const TimerSettings = ({ config, updateConfig, styles }) => {
                     </Dropdown>
                 </div>
                 <div className={styles.helpText}>开启：启用所有动画；部分关闭：只禁用窗口缩放动画，保留计时器数字切换动画；关闭：禁用所有过渡动画。</div>
+            </Card>
+
+            <div className={styles.groupTitle}>声音</div>
+            <Card className={styles.card}>
+                <div className={styles.formGroup}>
+                    <Label className={styles.label} htmlFor="sound-switch">计时器提示音</Label>
+                    <Switch
+                        id="sound-switch"
+                        checked={timerConfig.enable_sound !== false}
+                        onChange={(_, data) => handleSoundChange(data.checked)}
+                    />
+                </div>
+                <div className={styles.helpText}>倒计时结束时播放提示音。</div>
             </Card>
         </div>
     );

@@ -72,8 +72,12 @@ const Timer = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [autoHideSeconds, setAutoHideSeconds] = useState(0);
   const [enableAnimations, setEnableAnimations] = useState('on');
+  const [enableSound, setEnableSound] = useState(true);
   const timerRef = useRef(null);
   const isFullScreenRef = useRef(isFullScreen);
+  const audioRef = useRef(new Audio('/TimerDownNotice.wav'));
+  const startTimeRef = useRef(null);
+  const elapsedTimeRef = useRef(0);
 
   // 保持 ref 始终是最新值，避免闭包问题
   useEffect(() => {
@@ -117,6 +121,9 @@ const Timer = () => {
             }
             setEnableAnimations(animValue);
           }
+          if (config.timer && config.timer.enable_sound !== undefined) {
+            setEnableSound(config.timer.enable_sound);
+          }
         } catch (error) {
           console.error('Failed to load config:', error);
         }
@@ -136,6 +143,9 @@ const Timer = () => {
             animValue = animValue ? 'on' : 'off';
           }
           setEnableAnimations(animValue);
+        }
+        if (newConfig.timer && newConfig.timer.enable_sound !== undefined) {
+          setEnableSound(newConfig.timer.enable_sound);
         }
       });
     }
@@ -275,30 +285,51 @@ const Timer = () => {
 
   useEffect(() => {
     if (isRunning) {
-      if (mode === 'countdown' && timeInSeconds <= 0) {
-        setIsRunning(false);
-        // 倒计时结束，如果处于迷你模式则自动退出
-        if (isMiniMode) {
-          toggleMiniMode();
-        }
-        // 倒计时结束，如果处于全屏模式则自动退出全屏
-        exitFullScreen();
-        return;
-      }
+      // 恢复时重新记录开始时间
+      startTimeRef.current = Date.now();
 
       timerRef.current = setInterval(() => {
-        setTimeInSeconds((prevTime) => {
-          if (mode === 'countdown') {
-            return Math.max(0, prevTime - 1);
-          } else {
-            return prevTime + 1;
-          }
-        });
-      }, 1000);
+        const now = Date.now();
+        const deltaSeconds = Math.floor((now - startTimeRef.current) / 1000);
+
+        if (deltaSeconds > 0) {
+          // 更新已计时时长
+          elapsedTimeRef.current += deltaSeconds;
+          // 重新记录开始时间，保留余数毫秒以保证精度
+          startTimeRef.current = now - ((now - startTimeRef.current) % 1000);
+
+          setTimeInSeconds((prevTime) => {
+            let newTime;
+            if (mode === 'countdown') {
+              newTime = Math.max(0, prevTime - deltaSeconds);
+            } else {
+              newTime = prevTime + deltaSeconds;
+            }
+
+            // 检查是否结束（倒计时到0）
+            if (mode === 'countdown' && newTime === 0 && prevTime > 0) {
+              // 倒计时结束，停止计时
+              setIsRunning(false);
+              // 播放提示音
+              if (enableSound && audioRef.current) {
+                audioRef.current.currentTime = 0;
+                audioRef.current.play().catch(err => console.log('Audio play failed:', err));
+              }
+              // 退出迷你模式和全屏
+              if (isMiniMode) {
+                toggleMiniMode();
+              }
+              exitFullScreen();
+            }
+
+            return newTime;
+          });
+        }
+      }, 100); // 每100ms检查一次，保证精度
     }
 
     return () => clearInterval(timerRef.current);
-  }, [isRunning, mode, timeInSeconds, isMiniMode, isFullScreen]);
+  }, [isRunning, mode, isMiniMode, enableSound]);
 
   useEffect(() => {
     if (isRunning) {
@@ -349,6 +380,10 @@ const Timer = () => {
 
   const handleStartPause = () => {
     const nextIsRunning = !isRunning;
+    if (nextIsRunning) {
+      // 开始：重置已计时时长
+      elapsedTimeRef.current = 0;
+    }
     setIsRunning(nextIsRunning);
     // 暂停时退出全屏
     if (!nextIsRunning) {
@@ -360,6 +395,9 @@ const Timer = () => {
     clearInterval(timerRef.current);
     setIsRunning(false);
     setTimeInSeconds(mode === 'countdown' ? initialTime : 0);
+    // 重置已计时时长
+    elapsedTimeRef.current = 0;
+    startTimeRef.current = null;
     // 重置时退出全屏
     exitFullScreen();
   };
