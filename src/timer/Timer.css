@@ -190,6 +190,11 @@ button {
     gap: 0;
 }
 
+/* 全屏模式下禁用窗口拖动 */
+#root.fullscreen-mode {
+    -webkit-app-region: no-drag;
+}
+
 #root.mini-mode .time-display {
     font-size: min(22vw, 60vh);
     margin-top: 10px;

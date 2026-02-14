@@ -6,7 +6,7 @@ const { contextBridge, ipcRenderer } = require('electron');
  */
 contextBridge.exposeInMainWorld('electronAPI', {
     // 调整窗口大小
-    resizeWindow: (width, height, y) => ipcRenderer.send('resize-window', width, height, y),
+    resizeWindow: (width, height, y, animate) => ipcRenderer.send('resize-window', width, height, y, animate),
 
     // 设置鼠标穿透（预留接口）
     setIgnoreMouse: (ignore, forward) => ipcRenderer.send('set-ignore-mouse', ignore, forward),
@@ -85,7 +85,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     closeWindow: () => ipcRenderer.send('close-window'),
 
     // 全屏控制
-    setFullScreen: (flag) => ipcRenderer.send('set-fullscreen', flag),
+    setFullScreen: (flag, animate) => ipcRenderer.send('set-fullscreen', flag, animate),
     isFullScreen: () => ipcRenderer.invoke('is-fullscreen'),
     onFullScreenChanged: (callback) => {
         const subscription = (event, isFullScreen) => callback(isFullScreen);

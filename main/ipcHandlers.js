@@ -17,7 +17,7 @@ const { takeScreenshot } = require('./screenshot');
 function registerIPCHandlers() {
   // ===== 窗口管理 =====
 
-  ipcMain.on('resize-window', (event, width, height, y) => {
+  ipcMain.on('resize-window', (event, width, height, y, animate = true) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (!win) return;
 
@@ -27,7 +27,7 @@ function registerIPCHandlers() {
       // 停止之前可能存在的动画（如果有的话，简单处理可跳过）
       win.setMinimumSize(0, 0);
       win.setMaximumSize(10000, 10000);
-      
+
       const startBounds = win.getBounds();
       const targetBounds = {
         width: Math.floor(width),
@@ -36,18 +36,35 @@ function registerIPCHandlers() {
         y: typeof y === 'number' ? Math.floor(y) : startBounds.y
       };
 
+      // 如果禁用动画（false 或 'off'），直接设置最终大小
+      // 'partial' 模式只禁用 ipcHandlers 中的窗口缩放差值动画
+      if (animate === false || animate === 'off') {
+        if (!win.isDestroyed()) {
+          win.setBounds(targetBounds);
+        }
+        return;
+      }
+
+      // 'partial' 模式：禁用窗口缩放差值动画，但保留其他动画
+      if (animate === 'partial') {
+        if (!win.isDestroyed()) {
+          win.setBounds(targetBounds);
+        }
+        return;
+      }
+
       // 动画参数
       const duration = 500; // 与 CSS transition 0.5s 保持一致
       const startTime = Date.now();
-      
-      const animate = () => {
+
+      const runAnimation = () => {
         const now = Date.now();
         const elapsed = now - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        
+
         // 使用 EaseOutCubic 缓动函数: f(t) = 1 - (1-t)^3
         const ease = 1 - Math.pow(1 - progress, 3);
-        
+
         const currentBounds = {
           x: Math.floor(startBounds.x + (targetBounds.x - startBounds.x) * ease),
           y: Math.floor(startBounds.y + (targetBounds.y - startBounds.y) * ease),
@@ -57,15 +74,15 @@ function registerIPCHandlers() {
 
         if (!win.isDestroyed()) {
           win.setBounds(currentBounds);
-          
+
           if (progress < 1) {
             // 使用 setTimeout 模拟 60fps
-            setTimeout(animate, 16);
+            setTimeout(runAnimation, 16);
           }
         }
       };
 
-      animate();
+      runAnimation();
     }
   });
 
@@ -207,7 +224,7 @@ function registerIPCHandlers() {
   });
 
   // 全屏控制（带插值动画）
-  ipcMain.on('set-fullscreen', (event, flag) => {
+  ipcMain.on('set-fullscreen', (event, flag, animate = true) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (!win || win.isDestroyed()) return;
 
@@ -232,8 +249,28 @@ function registerIPCHandlers() {
     // 标记为程序控制，避免 window.js 中的 leave-full-screen 事件重复处理恢复逻辑
     win._programmaticFullScreen = true;
 
+    // 如果禁用动画，直接设置最终状态
+    if (animate === false) {
+      if (flag) {
+        win.setFullScreen(true);
+      } else {
+        if (win.isFullScreen()) {
+          win.setFullScreen(false);
+        }
+        // 恢复原始窗口大小
+        if (win._originalBounds) {
+          win.setBounds(win._originalBounds);
+          win._originalBounds = null;
+        }
+        win.setMinimumSize(300, 150);
+        win._programmaticFullScreen = false;
+      }
+      win.webContents.send('fullscreen-changed', flag);
+      return;
+    }
+
     if (flag) {
-      // ===== 进入全屏 =====
+      // ===== 进入全屏（带动画） =====
       win._isFullScreenAnimating = true;
 
       const startBounds = win.getBounds();
@@ -279,7 +316,7 @@ function registerIPCHandlers() {
 
       animate();
     } else {
-      // ===== 退出全屏 =====
+      // ===== 退出全屏（带动画） =====
       const originalBounds = win._originalBounds;
 
       if (win.isFullScreen()) {

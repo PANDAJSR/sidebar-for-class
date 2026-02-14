@@ -71,6 +71,7 @@ const Timer = () => {
   const [isMiniMode, setIsMiniMode] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [autoHideSeconds, setAutoHideSeconds] = useState(0);
+  const [enableAnimations, setEnableAnimations] = useState('on');
   const timerRef = useRef(null);
   const isFullScreenRef = useRef(isFullScreen);
 
@@ -108,6 +109,14 @@ const Timer = () => {
           if (config.timer && config.timer.auto_hide_seconds !== undefined) {
             setAutoHideSeconds(config.timer.auto_hide_seconds);
           }
+          if (config.timer && config.timer.enable_animations !== undefined) {
+            let animValue = config.timer.enable_animations;
+            // 兼容旧配置：布尔值转换为新格式
+            if (typeof animValue === 'boolean') {
+              animValue = animValue ? 'on' : 'off';
+            }
+            setEnableAnimations(animValue);
+          }
         } catch (error) {
           console.error('Failed to load config:', error);
         }
@@ -120,11 +129,24 @@ const Timer = () => {
         if (newConfig.timer && newConfig.timer.auto_hide_seconds !== undefined) {
           setAutoHideSeconds(newConfig.timer.auto_hide_seconds);
         }
+        if (newConfig.timer && newConfig.timer.enable_animations !== undefined) {
+          let animValue = newConfig.timer.enable_animations;
+          // 兼容旧配置：布尔值转换为新格式
+          if (typeof animValue === 'boolean') {
+            animValue = animValue ? 'on' : 'off';
+          }
+          setEnableAnimations(animValue);
+        }
       });
     }
   }, []);
 
-  const toggleMiniMode = () => {
+  const toggleMiniMode = async () => {
+    // 如果当前在全屏模式，先退出全屏
+    if (isFullScreenRef.current) {
+      await exitFullScreen();
+    }
+
     const nextMiniMode = !isMiniMode;
     setIsMiniMode(nextMiniMode);
 
@@ -134,21 +156,30 @@ const Timer = () => {
 
       // 简单地让窗口在高度变化时，Y 坐标偏移一半的差值，
       // 这样窗口看起来是往中心缩小的，而不是往下长或者往上缩
-      window.electronAPI.resizeWindow(600, targetHeight);
+      window.electronAPI.resizeWindow(600, targetHeight, undefined, enableAnimations === 'on');
     }
   };
 
   const toggleFullScreen = async () => {
     const nextFullScreen = !isFullScreenRef.current;
+
+    // 如果要进入全屏，且当前是迷你模式，先退出迷你模式
+    if (nextFullScreen && isMiniMode) {
+      setIsMiniMode(false);
+      if (window.electronAPI && window.electronAPI.resizeWindow) {
+        window.electronAPI.resizeWindow(600, 400, undefined, enableAnimations === 'on');
+      }
+    }
+
     if (window.electronAPI && window.electronAPI.setFullScreen) {
-      await window.electronAPI.setFullScreen(nextFullScreen);
+      await window.electronAPI.setFullScreen(nextFullScreen, enableAnimations === 'on');
     }
     // 状态更新由 onFullScreenChanged 事件处理，不要在这里手动设置
   };
 
   const exitFullScreen = async () => {
     if (window.electronAPI && window.electronAPI.setFullScreen) {
-      await window.electronAPI.setFullScreen(false);
+      await window.electronAPI.setFullScreen(false, enableAnimations === 'on');
     }
     // 状态更新由 onFullScreenChanged 事件处理
   };
@@ -163,7 +194,20 @@ const Timer = () => {
     }
   }, []);
 
-  // 窗口调整大小时禁用过渡动画，避免视觉上的“追赶”效果
+  // 根据动画设置应用/移除 no-transition 类
+  // 只有当 enableAnimations 为 'off' 时才完全禁用过渡动画
+  useEffect(() => {
+    const root = document.getElementById('root');
+    if (root) {
+      if (enableAnimations === 'off') {
+        root.classList.add('no-transition');
+      } else {
+        root.classList.remove('no-transition');
+      }
+    }
+  }, [enableAnimations]);
+
+  // 窗口调整大小时禁用过渡动画，避免视觉上的"追赶"效果
   useEffect(() => {
     let resizeTimer;
     const handleResize = () => {
@@ -172,7 +216,10 @@ const Timer = () => {
         root.classList.add('no-transition');
         if (resizeTimer) clearTimeout(resizeTimer);
         resizeTimer = setTimeout(() => {
-          root.classList.remove('no-transition');
+          // 只有当动画不是完全禁用时才移除 no-transition 类
+          if (enableAnimations !== 'off') {
+            root.classList.remove('no-transition');
+          }
         }, 100);
       }
     };
@@ -181,7 +228,7 @@ const Timer = () => {
       window.removeEventListener('resize', handleResize);
       if (resizeTimer) clearTimeout(resizeTimer);
     };
-  }, []);
+  }, [enableAnimations]);
 
   // 手动监听 ESC 键，确保在任何情况下都能退出全屏
   useEffect(() => {
@@ -271,6 +318,18 @@ const Timer = () => {
       }
     }
   }, [isMiniMode]);
+
+  // 全屏模式下禁用窗口拖动
+  useEffect(() => {
+    const root = document.getElementById('root');
+    if (root) {
+      if (isFullScreen) {
+        root.classList.add('fullscreen-mode');
+      } else {
+        root.classList.remove('fullscreen-mode');
+      }
+    }
+  }, [isFullScreen]);
 
   const formatTimeDigits = (totalSeconds) => {
     const hours = Math.floor(totalSeconds / 3600);

@@ -114,6 +114,7 @@
         "icc_compatibility": true
     },
     "timer": {
-        "auto_hide_seconds": 5
+        "auto_hide_seconds": 5,
+        "enable_animations": "partial"
     }
 }

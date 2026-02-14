@@ -29,6 +29,17 @@ const TimerSettings = ({ config, updateConfig, styles }) => {
         updateConfig(newConfig);
     };
 
+    const handleAnimationsChange = (value) => {
+        const newConfig = {
+            ...config,
+            timer: {
+                ...timerConfig,
+                enable_animations: value
+            }
+        };
+        updateConfig(newConfig);
+    };
+
     const options = [
         { label: '禁用', value: 0 },
         { label: '3秒', value: 3 },
@@ -36,9 +47,25 @@ const TimerSettings = ({ config, updateConfig, styles }) => {
         { label: '10秒', value: 10 }
     ];
 
+    const animationOptions = [
+        { label: '开启', value: 'on' },
+        { label: '关闭', value: 'off' },
+        { label: '部分关闭', value: 'partial' }
+    ];
+
     // 获取当前选中的选项，如果没有设置则默认为禁用(0)
     const currentAutoHide = timerConfig.auto_hide_seconds || 0;
     const currentOption = options.find(opt => opt.value === currentAutoHide) || options[0];
+
+    // 获取动画设置，默认为开启('on')
+    // 兼容旧配置：如果 enable_animations 是布尔值，转换为新格式
+    let animationValue = timerConfig.enable_animations;
+    if (typeof animationValue === 'boolean') {
+        animationValue = animationValue ? 'on' : 'off';
+    } else if (!animationValue) {
+        animationValue = 'on';
+    }
+    const currentAnimationOption = animationOptions.find(opt => opt.value === animationValue) || animationOptions[0];
 
     return (
         <div className={styles.section}>
@@ -65,6 +92,26 @@ const TimerSettings = ({ config, updateConfig, styles }) => {
                     </Dropdown>
                 </div>
                 <div className={styles.helpText}>当计时器处于计时状态且无操作达到设定时间后，自动切换到迷你模式。</div>
+            </Card>
+
+            <div className={styles.groupTitle}>动画</div>
+            <Card className={styles.card}>
+                <div className={styles.formGroup}>
+                    <Label className={styles.label} htmlFor="animations-dropdown">启用动画</Label>
+                    <Dropdown
+                        id="animations-dropdown"
+                        value={currentAnimationOption.label}
+                        onOptionSelect={(_, data) => handleAnimationsChange(data.optionValue)}
+                        placeholder="选择动画模式"
+                    >
+                        {animationOptions.map((option) => (
+                            <Option key={option.value} value={option.value}>
+                                {option.label}
+                            </Option>
+                        ))}
+                    </Dropdown>
+                </div>
+                <div className={styles.helpText}>开启：启用所有动画；部分关闭：只禁用窗口缩放动画，保留计时器数字切换动画；关闭：禁用所有过渡动画。</div>
             </Card>
         </div>
     );
