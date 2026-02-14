@@ -2,7 +2,7 @@
     "transforms": {
         "display": 0,
         "height": 64,
-        "posy": 472,
+        "posy": 496,
         "animation_speed": 1,
         "size": 130,
         "auto_hide": true,
@@ -92,7 +92,15 @@
             "show_only_when_running": true
         }
     ],
-    "automatic": [],
+    "automatic": [
+        {
+            "name": "",
+            "on": [
+                "startup"
+            ],
+            "script": "testps.ps1"
+        }
+    ],
     "helper_tools": {
         "auto_kill_similar": true,
         "auto_kill_timer": true,

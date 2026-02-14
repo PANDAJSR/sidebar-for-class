@@ -6,7 +6,7 @@ const { ipcMain, app, screen, BrowserWindow } = require('electron');
 const { getConfigSync, updateConfig, previewConfig } = require('./config');
 const { getAllDisplays } = require('./display');
 const { getMainWindow, createSettingsWindow, createTimerWindow, setAlwaysOnTopFlag, resizeMainWindow, setIgnoreMouseEvents, notifyDisplaysUpdated, blurMainWindow } = require('./window');
-const { getVolume, setVolume, executeCommand, showDesktop, taskView, closeFrontWindow, openFile, openFolder, copyImageToClipboard, saveEditedImage } = require('./system');
+const { getVolume, setVolume, executeCommand, showDesktop, taskView, closeFrontWindow, openFile, openFolder, openWithNotepad, copyImageToClipboard, saveEditedImage } = require('./system');
 const { launchApp, getFileIcon } = require('./launcher');
 const { getFilesInFolder, readFileContent, writeFileContent, deleteFile, renameFile } = require('./fileSystem');
 const { takeScreenshot } = require('./screenshot');
@@ -427,6 +427,10 @@ function registerIPCHandlers() {
 
   ipcMain.on('open-folder', (event, filePath) => {
     openFolder(filePath);
+  });
+
+  ipcMain.on('open-with-notepad', (event, filePath) => {
+    openWithNotepad(filePath);
   });
 
   ipcMain.on('copy-image', (event, filePath) => {

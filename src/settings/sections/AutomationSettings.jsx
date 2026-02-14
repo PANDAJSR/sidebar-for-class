@@ -6,27 +6,16 @@
  * @param {Object} styles - 样式对象
  */
 
-import React, { useState } from 'react';
-import {
-    Card,
-    Label,
-    Input,
-    Button,
-    Field,
-    Title2,
-    Caption1,
-    Divider,
-    Checkbox,
-    Combobox,
-    Option
-} from "@fluentui/react-components";
-import {
-    AddRegular,
-    DeleteRegular,
-    PlayRegular,
-    EditRegular,
-    DocumentAddRegular
-} from "@fluentui/react-icons";
+import { useState, useEffect } from 'react';
+import 'mdui/components/card.js';
+import 'mdui/components/text-field.js';
+import 'mdui/components/button.js';
+import 'mdui/components/dropdown.js';
+import 'mdui/components/menu.js';
+import 'mdui/components/menu-item.js';
+import 'mdui/components/checkbox.js';
+import 'mdui/components/button-icon.js';
+import 'mdui/components/icon.js';
 import ScriptEditorModal from '../components/ScriptEditorModal';
 import CreateScriptModal from '../components/CreateScriptModal';
 
@@ -37,6 +26,7 @@ const AutomationSettings = ({ config, updateConfig, styles }) => {
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [currentScriptIndex, setCurrentScriptIndex] = useState(-1);
     const [existingScripts, setExistingScripts] = useState([]);
+    const [dropdownOpen, setDropdownOpen] = useState({});
 
     // 获取 data 目录下的现有脚本
     const fetchScripts = async () => {
@@ -54,7 +44,7 @@ const AutomationSettings = ({ config, updateConfig, styles }) => {
         }
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         fetchScripts();
     }, []);
 
@@ -126,117 +116,141 @@ const AutomationSettings = ({ config, updateConfig, styles }) => {
 
             <div className={styles.groupTitle} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>任务列表</span>
-                <Button
-                    appearance="primary"
-                    icon={<AddRegular />}
-                    size="small"
+                <mdui-button
+                    variant="filled"
+                    icon="add"
                     onClick={handleAddTask}
                 >
                     添加任务
-                </Button>
+                </mdui-button>
             </div>
 
             {automatic.length === 0 ? (
-                <Card className={styles.card}>
-                    <div style={{ textAlign: 'center', padding: '20px', color: 'var(--colorNeutralForeground3)' }}>
+                <mdui-card variant="filled" className={styles.card}>
+                    <div style={{ textAlign: 'center', padding: '20px', color: 'var(--mdui-color-on-surface-variant)' }}>
                         暂无自动化任务，点击上方按钮添加。
                     </div>
-                </Card>
+                </mdui-card>
             ) : (
                 automatic.map((task, index) => (
-                    <Card key={index} className={styles.card} style={{ marginBottom: '16px' }}>
+                    <mdui-card key={index} variant="filled" className={styles.card} style={{ marginBottom: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <PlayRegular />
-                                <Caption1 style={{ fontWeight: '600' }}>{task.name || `任务 ${index + 1}`}</Caption1>
+                                <mdui-icon name="play_arrow" style={{ color: 'var(--mdui-color-primary)' }}></mdui-icon>
+                                <span style={{ fontWeight: '600', fontSize: '14px' }}>{task.name || `任务 ${index + 1}`}</span>
                             </div>
-                            <Button
-                                appearance="subtle"
-                                icon={<DeleteRegular />}
-                                size="small"
+                            <mdui-button-icon
+                                icon="delete"
                                 onClick={() => handleDeleteTask(index)}
                             />
                         </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            <Field label="任务名称">
-                                <Input
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div className={styles.formGroup}>
+                                <div className={styles.label}>任务名称</div>
+                                <mdui-text-field
                                     value={task.name || ''}
                                     onChange={(e) => handleUpdateTask(index, 'name', e.target.value)}
-                                    // placeholder="例如：启动自备工具"
+                                    variant="outlined"
+                                    style={{ width: '100%' }}
                                 />
-                            </Field>
+                            </div>
 
-                            <Field label="脚本路径或命令">
-                                <div style={{ display: 'flex', gap: '8px' }}>
-                                    <Combobox
-                                        style={{ flex: 1 }}
-                                        value={task.script || ''}
-                                        onOptionSelect={(_, data) => handleUpdateTask(index, 'script', data.optionValue)}
-                                        onChange={(e) => handleUpdateTask(index, 'script', e.target.value)}
-                                        placeholder="例如: test.bat 或 C:\\Windows\\notepad.exe"
-                                        freeform
-                                    >
-                                        {existingScripts.map((script) => (
-                                            <Option key={script} value={script}>
-                                                {script}
-                                            </Option>
-                                        ))}
-                                    </Combobox>
-                                    <Button
-                                        icon={<DocumentAddRegular />}
+                            <div className={styles.formGroup}>
+                                <div className={styles.label}>脚本路径或命令</div>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <mdui-text-field
+                                            value={task.script || ''}
+                                            onChange={(e) => handleUpdateTask(index, 'script', e.target.value)}
+                                            placeholder="例如: test.bat 或 C:\\Windows\\notepad.exe"
+                                            variant="outlined"
+                                            style={{ width: '100%' }}
+                                        />
+                                        {existingScripts.length > 0 && (
+                                            <mdui-dropdown
+                                                open={dropdownOpen[index]}
+                                                onOpenChange={(e) => {
+                                                    setDropdownOpen(prev => ({ ...prev, [index]: e.target.open }));
+                                                }}
+                                            >
+                                                <mdui-button
+                                                    slot="trigger"
+                                                    variant="text"
+                                                    icon="arrow_drop_down"
+                                                    style={{ marginTop: '4px' }}
+                                                >
+                                                    选择已有脚本
+                                                </mdui-button>
+                                                <mdui-menu style={{ maxHeight: '200px', overflow: 'auto' }}>
+                                                    {existingScripts.map((script) => (
+                                                        <mdui-menu-item
+                                                            key={script}
+                                                            value={script}
+                                                            onClick={() => handleUpdateTask(index, 'script', script)}
+                                                        >
+                                                            {script}
+                                                        </mdui-menu-item>
+                                                    ))}
+                                                </mdui-menu>
+                                            </mdui-dropdown>
+                                        )}
+                                    </div>
+                                    <mdui-button-icon
+                                        variant="outlined"
+                                        icon="note_add"
                                         onClick={() => {
                                             setCurrentScriptIndex(index);
                                             setCreateModalOpen(true);
                                         }}
                                         title="新建脚本文件"
                                     />
-                                    <Button
-                                        icon={<EditRegular />}
+                                    <mdui-button-icon
+                                        variant="outlined"
+                                        icon="edit"
                                         onClick={() => {
-                                            setCurrentScriptIndex(index);
-                                            setEditorOpen(true);
+                                            window.electronAPI.openWithNotepad(task.script);
                                         }}
                                         disabled={!task.script}
-                                        title="在编辑器中打开"
+                                        title="在记事本中打开"
                                     />
-                                    <Button
-                                        icon={<PlayRegular />}
+                                    <mdui-button-icon
+                                        icon="play_arrow"
                                         onClick={() => {
                                             window.electronAPI.launchApp(task.script);
                                         }}
                                         disabled={!task.script}
                                         title="立即试运行"
-                                        appearance="subtle"
                                     />
                                 </div>
-                            </Field>
+                            </div>
 
                             <div>
-                                <Label style={{ marginBottom: '8px', display: 'block' }}>触发器</Label>
-                                <div style={{ display: 'flex', gap: '20px' }}>
-                                    <Checkbox
-                                        label="在 SidebarForClass 启动时"
+                                <div className={styles.label} style={{ marginBottom: '12px' }}>触发器</div>
+                                <div style={{ display: 'flex', gap: '24px' }}>
+                                    <mdui-checkbox
                                         checked={task.on?.includes('startup')}
                                         onChange={() => handleToggleOn(index, 'startup')}
-                                    />
-                                    <Checkbox
-                                        label="在 SidebarForClass 退出时"
+                                    >
+                                        在 SidebarForClass 启动时
+                                    </mdui-checkbox>
+                                    <mdui-checkbox
                                         checked={task.on?.includes('shutdown')}
                                         onChange={() => handleToggleOn(index, 'shutdown')}
-                                    />
-                                    {/* 未来可以添加更多触发条件，如：屏幕解锁、定时等 */}
+                                    >
+                                        在 SidebarForClass 退出时
+                                    </mdui-checkbox>
                                 </div>
                             </div>
                         </div>
-                    </Card>
+                    </mdui-card>
                 ))
             )}
 
-            <CreateScriptModal 
-                isOpen={createModalOpen} 
-                onOpenChange={setCreateModalOpen} 
-                onCreate={handleCreateScript} 
+            <CreateScriptModal
+                isOpen={createModalOpen}
+                onOpenChange={setCreateModalOpen}
+                onCreate={handleCreateScript}
             />
 
             <ScriptEditorModal
@@ -244,7 +258,7 @@ const AutomationSettings = ({ config, updateConfig, styles }) => {
                 onOpenChange={setEditorOpen}
                 filePath={currentScriptIndex >= 0 ? automatic[currentScriptIndex]?.script : ''}
             />
-            
+
             <div className={styles.helpText} style={{ marginTop: '16px' }}>
                 提示：相对路径将相对于程序的数据目录 (data/) 进行解析。脚本将以隐藏窗口模式静默运行。
             </div>

@@ -105,6 +105,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // 打开文件/文件夹
     openFile: (path) => ipcRenderer.send('open-file', path),
     openFolder: (path) => ipcRenderer.send('open-folder', path),
+    openWithNotepad: (path) => ipcRenderer.send('open-with-notepad', path),
     copyImage: (path) => ipcRenderer.send('copy-image', path),
     saveEditedImage: (path, data) => ipcRenderer.send('save-edited-image', path, data),
 

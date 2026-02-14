@@ -4,20 +4,11 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-    Card,
-    Button,
-    Caption1,
-    Table,
-    TableHeader,
-    TableRow,
-    TableHeaderCell,
-    TableBody,
-    TableCell,
-    TableSelectionCell,
-    Badge,
-    Tooltip
-} from "@fluentui/react-components";
+import 'mdui/components/card.js';
+import 'mdui/components/button.js';
+import 'mdui/components/button-icon.js';
+import 'mdui/components/tooltip.js';
+import 'mdui/components/chip.js';
 import {
     AddRegular,
     DeleteRegular,
@@ -142,28 +133,42 @@ const DataSettings = ({ config, updateConfig, styles }) => {
         const badges = [];
 
         // 添加文件类型徽标
+        let chipType = 'default';
         switch (ext) {
-            case 'js': badges.push(<Badge key="ext" appearance="outline" color="brand">JS</Badge>); break;
-            case 'json': badges.push(<Badge key="ext" appearance="outline" color="success">JSON</Badge>); break;
-            case 'bat': case 'cmd': badges.push(<Badge key="ext" appearance="outline" color="important">BAT</Badge>); break;
-            case 'ps1': badges.push(<Badge key="ext" appearance="outline" color="informative">PS1</Badge>); break;
-            default: badges.push(<Badge key="ext" appearance="outline">{ext.toUpperCase()}</Badge>);
+            case 'js': chipType = 'primary'; break;
+            case 'json': chipType = 'success'; break;
+            case 'bat': case 'cmd': chipType = 'error'; break;
+            case 'ps1': chipType = 'info'; break;
+            default: chipType = 'default';
         }
 
+        badges.push(
+            <mdui-chip key="ext" variant="outlined" selectable={false} type={chipType}>
+                {ext.toUpperCase()}
+            </mdui-chip>
+        );
+
         if (filename.toLowerCase() === 'config.json') {
-            badges.push(<Badge key="config" appearance="filled" color="brand">当前配置</Badge>);
+            badges.push(
+                <mdui-chip key="config" variant="filled" selectable={false} type="primary">
+                    当前配置
+                </mdui-chip>
+            );
         }
 
         if (scriptToTasks.has(filename)) {
             const tasks = scriptToTasks.get(filename);
             badges.push(
-                <Tooltip key="auto" content={`此脚本已被自动化任务使用: ${tasks.join('、')}`} relationship="label">
-                    <Badge appearance="tint" color="informative" icon={<BotRegular />}>自动化引用</Badge>
-                </Tooltip>
+                <mdui-tooltip key="auto" content={`此脚本已被自动化任务使用: ${tasks.join('、')}`}>
+                    <mdui-chip variant="assist" selectable={false} type="info">
+                        <BotRegular slot="icon" />
+                        自动化引用
+                    </mdui-chip>
+                </mdui-tooltip>
             );
         }
 
-        return <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>{badges}</div>;
+        return <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>{badges}</div>;
     };
 
     return (
@@ -176,102 +181,100 @@ const DataSettings = ({ config, updateConfig, styles }) => {
             <div className={styles.groupTitle} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>文件列表</span>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                    <Button
-                        icon={<ArrowClockwiseRegular />}
+                    <mdui-button
+                        variant="outlined"
                         size="small"
                         onClick={fetchFiles}
                         disabled={loading}
                     >
+                        <ArrowClockwiseRegular slot="icon" />
                         刷新
-                    </Button>
-                    <Button
-                        appearance="primary"
-                        icon={<AddRegular />}
+                    </mdui-button>
+                    <mdui-button
+                        variant="filled"
                         size="small"
                         onClick={() => setCreateModalOpen(true)}
                     >
+                        <AddRegular slot="icon" />
                         新建文件
-                    </Button>
+                    </mdui-button>
                 </div>
             </div>
 
-            <Card className={styles.card} style={{ padding: 0, overflow: 'hidden' }}>
-                <Table size="extra-small">
-                    <TableHeader>
-                        <TableRow>
-                            <TableHeaderCell style={{ width: '40%' }}>文件名</TableHeaderCell>
-                            <TableHeaderCell style={{ width: '15%' }}>类型</TableHeaderCell>
-                            <TableHeaderCell style={{ width: '30%' }}>修改时间</TableHeaderCell>
-                            <TableHeaderCell style={{ width: '15%' }}>操作</TableHeaderCell>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
+            <mdui-card variant="filled" className={styles.card} style={{ padding: 0, overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                    <thead style={{ backgroundColor: 'rgb(var(--mdui-color-surface-container))' }}>
+                        <tr>
+                            <th style={{ width: '40%', padding: '12px 16px', textAlign: 'left', fontWeight: 500 }}>文件名</th>
+                            <th style={{ width: '15%', padding: '12px 16px', textAlign: 'left', fontWeight: 500 }}>类型</th>
+                            <th style={{ width: '30%', padding: '12px 16px', textAlign: 'left', fontWeight: 500 }}>修改时间</th>
+                            <th style={{ width: '15%', padding: '12px 16px', textAlign: 'left', fontWeight: 500 }}>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                         {files.length === 0 && !loading ? (
-                            <TableRow>
-                                <TableCell colSpan={4} style={{ textAlign: 'center', padding: '20px' }}>
+                            <tr>
+                                <td colSpan={4} style={{ textAlign: 'center', padding: '20px' }}>
                                     数据目录为空
-                                </TableCell>
-                            </TableRow>
+                                </td>
+                            </tr>
                         ) : (
                             files.map((file) => (
-                                <TableRow key={file.name}>
-                                    <TableCell>
+                                <tr key={file.name} style={{ borderTop: '1px solid rgb(var(--mdui-color-surface-variant))' }}>
+                                    <td style={{ padding: '12px 16px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
                                             <DocumentRegular />
                                             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                 {file.name}
                                             </span>
                                             {file.name.toLowerCase() === 'config.json' && (
-                                                <Tooltip content="这是应用程序的主配置文件" relationship="label">
-                                                    <InfoRegular style={{ fontSize: '12px', color: 'var(--colorBrandForeground1)' }} />
-                                                </Tooltip>
+                                                <mdui-tooltip content="这是应用程序的主配置文件">
+                                                    <InfoRegular style={{ fontSize: '14px', color: 'rgb(var(--mdui-color-primary))', flexShrink: 0 }} />
+                                                </mdui-tooltip>
                                             )}
                                         </div>
-                                    </TableCell>
-                                    <TableCell>
+                                    </td>
+                                    <td style={{ padding: '12px 16px' }}>
                                         {getFileBadge(file.name)}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Caption1>{formatDate(file.mtime)}</Caption1>
-                                    </TableCell>
-                                    <TableCell>
+                                    </td>
+                                    <td style={{ padding: '12px 16px', color: 'rgb(var(--mdui-color-on-surface-variant))' }}>
+                                        {formatDate(file.mtime)}
+                                    </td>
+                                    <td style={{ padding: '12px 16px' }}>
                                         <div style={{ display: 'flex', gap: '4px' }}>
-                                            <Tooltip content="编辑" relationship="label">
-                                                <Button
-                                                    appearance="subtle"
-                                                    icon={<EditRegular />}
-                                                    size="small"
+                                            <mdui-tooltip content="编辑">
+                                                <mdui-button-icon
                                                     onClick={() => {
                                                         setSelectedFilePath(file.name);
                                                         setEditorOpen(true);
                                                     }}
-                                                />
-                                            </Tooltip>
-                                            <Tooltip content="重命名" relationship="label">
-                                                <Button
-                                                    appearance="subtle"
-                                                    icon={<RenameRegular />}
-                                                    size="small"
+                                                >
+                                                    <EditRegular />
+                                                </mdui-button-icon>
+                                            </mdui-tooltip>
+                                            <mdui-tooltip content="重命名">
+                                                <mdui-button-icon
                                                     onClick={() => handleRenameFile(file.name)}
-                                                />
-                                            </Tooltip>
-                                            <Tooltip content="删除" relationship="label">
-                                                <Button
-                                                    appearance="subtle"
-                                                    icon={<DeleteRegular />}
-                                                    size="small"
+                                                >
+                                                    <RenameRegular />
+                                                </mdui-button-icon>
+                                            </mdui-tooltip>
+                                            <mdui-tooltip content="删除">
+                                                <mdui-button-icon
                                                     onClick={() => handleDeleteFile(file.name)}
                                                     disabled={file.name.toLowerCase() === 'config.json'}
-                                                />
-                                            </Tooltip>
+                                                >
+                                                    <DeleteRegular />
+                                                </mdui-button-icon>
+                                            </mdui-tooltip>
                                         </div>
-                                    </TableCell>
-                                </TableRow>
+                                    </td>
+                                </tr>
                             ))
                         )}
-                    </TableBody>
-                </Table>
-            </Card>
+                    </tbody>
+                </table>
+            </mdui-card>
 
             <CreateScriptModal
                 isOpen={createModalOpen}
