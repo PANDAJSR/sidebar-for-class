@@ -35,15 +35,6 @@
         }
       ]
     },
-    "extraFiles": [
-      {
-        "from": "data",
-        "to": "data",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ],
     "asar": true
   },
   "repository": {

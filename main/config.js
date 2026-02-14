@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs');
 
 const { app } = require('electron');
+const { DEFAULT_CONFIG } = require('./default-config');
 
 // 获取基础路径：开发环境下是项目根目录，生产环境下是可执行文件所在目录
 const isDev = !app.isPackaged;
@@ -22,6 +23,20 @@ if (!fs.existsSync(DATA_DIR)) {
 }
 
 /**
+ * 释放默认配置文件
+ * @returns {Object} 默认配置对象
+ */
+function releaseDefaultConfig() {
+  try {
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(DEFAULT_CONFIG, null, 4), 'utf8');
+    console.log('[Config] 已释放默认配置文件到:', CONFIG_PATH);
+  } catch (e) {
+    console.error('[Config] 释放默认配置文件失败:', e);
+  }
+  return DEFAULT_CONFIG;
+}
+
+/**
  * 同步读取配置文件
  * @returns {Object} 配置对象
  */
@@ -31,10 +46,11 @@ function getConfigSync() {
       const content = fs.readFileSync(CONFIG_PATH, 'utf8');
       return JSON.parse(content);
     } catch (e) {
-      console.error('解析配置文件失败:', e);
+      console.error('[Config] 解析配置文件失败:', e);
     }
   }
-  return { widgets: [], transforms: { display: 0, height: 64, posy: 0 } };
+  // 配置文件不存在，释放默认配置
+  return releaseDefaultConfig();
 }
 
 /**

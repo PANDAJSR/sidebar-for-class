@@ -1,4 +1,8 @@
-{
+/**
+ * 默认配置文件
+ * 打包时内置到 exe 中，首次运行时自动释放
+ */
+const DEFAULT_CONFIG = {
     "transforms": {
         "display": 0,
         "height": 64,
@@ -59,63 +63,33 @@
         },
         {
             "type": "volume_slider",
-            "range": [
-                0,
-                100
-            ]
+            "range": [0, 100]
         },
         {
             "type": "toolbar",
-            "tools": [
-                "timer",
-                "screenshot",
-                "touch_keyboard"
-            ]
+            "tools": ["timer", "screenshot", "touch_keyboard"]
         },
         {
             "type": "toolbar",
-            "tools": [
-                "show_desktop",
-                "taskview",
-                "close_front_window"
-            ]
+            "tools": ["show_desktop", "taskview", "close_front_window"]
         },
         {
             "type": "iccce_control",
-            "functions": [
-                "randone",
-                "rand",
-                "timer",
-                "whiteboard",
-                "show"
-            ],
+            "functions": ["randone", "rand", "timer", "whiteboard", "show"],
             "show_only_when_running": true
         }
     ],
-    "automatic": [
-        {
-            "name": "测试一下",
-            "on": [
-                "startup"
-            ],
-            "script": "testps.ps1"
-        },
-        {
-            "name": "114514",
-            "on": [
-                "shutdown"
-            ],
-            "script": "helloworld.bat"
-        }
-    ],
+    "automatic": [],
     "helper_tools": {
         "auto_kill_similar": true,
         "auto_kill_timer": true,
         "icc_compatibility": true
     },
     "timer": {
-        "auto_hide_seconds": 5,
-        "enable_animations": "partial",
+        "auto_hide_seconds": 0,
+        "enable_animations": "off",
         "enable_sound": true
     }
-}
+};
+
+module.exports = { DEFAULT_CONFIG };
