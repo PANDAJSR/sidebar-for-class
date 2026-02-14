@@ -7,13 +7,12 @@
  */
 
 import React from 'react';
-import {
-    Card,
-    Label,
-    Dropdown,
-    Option,
-    Switch
-} from "@fluentui/react-components";
+import 'mdui/components/card.js';
+import 'mdui/components/switch.js';
+import 'mdui/components/dropdown.js';
+import 'mdui/components/menu.js';
+import 'mdui/components/menu-item.js';
+import 'mdui/components/button.js';
 
 const TimerSettings = ({ config, updateConfig, styles }) => {
     // 确保 timer 配置对象存在
@@ -87,57 +86,66 @@ const TimerSettings = ({ config, updateConfig, styles }) => {
             </div>
 
             <div className={styles.groupTitle}>常规</div>
-            <Card className={styles.card}>
+            <mdui-card variant="filled" className={styles.card}>
                 <div className={styles.formGroup}>
-                    <Label className={styles.label} htmlFor="auto-hide-dropdown">自动收起至迷你模式</Label>
-                    <Dropdown
-                        id="auto-hide-dropdown"
-                        value={currentOption.label}
-                        onOptionSelect={(_, data) => handleAutoHideChange(data.optionValue)}
-                        placeholder="选择时间"
-                    >
-                        {options.map((option) => (
-                            <Option key={option.value} value={option.value}>
-                                {option.label}
-                            </Option>
-                        ))}
-                    </Dropdown>
+                    <div className={styles.label}>自动收起至迷你模式</div>
+                    <mdui-dropdown>
+                        <mdui-button slot="trigger" variant="tonal" style={{ width: '120px' }}>
+                            {currentOption.label}
+                        </mdui-button>
+                        <mdui-menu>
+                            {options.map((option) => (
+                                <mdui-menu-item
+                                    key={option.value}
+                                    value={option.value}
+                                    onClick={() => handleAutoHideChange(option.value)}
+                                >
+                                    {option.label}
+                                </mdui-menu-item>
+                            ))}
+                        </mdui-menu>
+                    </mdui-dropdown>
+                    <div className={styles.helpText}>当计时器处于计时状态且无操作达到设定时间后，自动切换到迷你模式。</div>
                 </div>
-                <div className={styles.helpText}>当计时器处于计时状态且无操作达到设定时间后，自动切换到迷你模式。</div>
-            </Card>
+            </mdui-card>
 
             <div className={styles.groupTitle}>动画</div>
-            <Card className={styles.card}>
+            <mdui-card variant="filled" className={styles.card}>
                 <div className={styles.formGroup}>
-                    <Label className={styles.label} htmlFor="animations-dropdown">启用动画</Label>
-                    <Dropdown
-                        id="animations-dropdown"
-                        value={currentAnimationOption.label}
-                        onOptionSelect={(_, data) => handleAnimationsChange(data.optionValue)}
-                        placeholder="选择动画模式"
-                    >
-                        {animationOptions.map((option) => (
-                            <Option key={option.value} value={option.value}>
-                                {option.label}
-                            </Option>
-                        ))}
-                    </Dropdown>
+                    <div className={styles.label}>启用动画</div>
+                    <mdui-dropdown>
+                        <mdui-button slot="trigger" variant="tonal" style={{ width: '120px' }}>
+                            {currentAnimationOption.label}
+                        </mdui-button>
+                        <mdui-menu>
+                            {animationOptions.map((option) => (
+                                <mdui-menu-item
+                                    key={option.value}
+                                    value={option.value}
+                                    onClick={() => handleAnimationsChange(option.value)}
+                                >
+                                    {option.label}
+                                </mdui-menu-item>
+                            ))}
+                        </mdui-menu>
+                    </mdui-dropdown>
+                    <div className={styles.helpText}>开启：启用所有动画；部分关闭：只禁用窗口缩放动画，保留计时器数字切换动画；关闭：禁用所有过渡动画。</div>
                 </div>
-                <div className={styles.helpText}>开启：启用所有动画；部分关闭：只禁用窗口缩放动画，保留计时器数字切换动画；关闭：禁用所有过渡动画。</div>
-            </Card>
+            </mdui-card>
 
             <div className={styles.groupTitle}>声音</div>
-            <Card className={styles.card}>
+            <mdui-card variant="filled" className={styles.card}>
                 <div className={styles.formGroup}>
-                    <Label className={styles.label} htmlFor="sound-switch">计时器提示音</Label>
-                    <Switch
-                        id="sound-switch"
-                        checked={timerConfig.enable_sound !== false}
-                        onChange={(_, data) => handleSoundChange(data.checked)}
-                    />
+                    <div className={styles.switchRow}>
+                        <div className={styles.label}>计时器提示音</div>
+                        <mdui-switch
+                            checked={timerConfig.enable_sound !== false}
+                            onChange={(e) => handleSoundChange(e.target.checked)}
+                        />
+                    </div>
+                    <div className={styles.helpText}>倒计时结束时播放提示音。</div>
                 </div>
-                <div className={styles.helpText}>倒计时结束时播放提示音。</div>
-            </Card>
+            </mdui-card>
         </div>
     );
 };
