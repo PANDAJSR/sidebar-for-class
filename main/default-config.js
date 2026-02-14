@@ -81,13 +81,13 @@ const DEFAULT_CONFIG = {
     ],
     "automatic": [],
     "helper_tools": {
-        "auto_kill_similar": true,
-        "auto_kill_timer": true,
+        "auto_kill_similar": false,
+        "auto_kill_timer": false,
         "icc_compatibility": true
     },
     "timer": {
-        "auto_hide_seconds": 0,
-        "enable_animations": "off",
+        "auto_hide_seconds": 5,
+        "enable_animations": "partial",
         "enable_sound": true
     }
 };

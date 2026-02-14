@@ -161,7 +161,7 @@ try {
                         height: parseInt(height),
                         title
                     };
-                    console.log(`[Window Monitor] Received event: type=${type}, title="${title}", pid=${pid}, processName=${processName}, hwnd=${hwnd}, size=${width}x${height}`);
+                    // console.log(`[Window Monitor] Received event: type=${type}, title="${title}", pid=${pid}, processName=${processName}, hwnd=${hwnd}, size=${width}x${height}`);
                     this.emit('window-event', eventData);
                 } else if (trimmed === 'PS_READY') {
                     console.log('[Window Monitor] PowerShell listener is ready.');
