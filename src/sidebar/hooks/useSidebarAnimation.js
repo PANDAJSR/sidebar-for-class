@@ -79,10 +79,7 @@ const useSidebarAnimation = (config, scale, startH, panelWidth, panelHeight, sid
         }
 
         const gray = Math.floor(156 + (255 - 156) * progress);
-        const targetOpacity = config?.transforms?.panel?.opacity || 0.9;
-        const startOpacity = 0.6;
-        const currentOpacity = startOpacity + (targetOpacity - startOpacity) * progress;
-        sidebarRef.current.style.background = `rgba(${gray}, ${gray}, ${gray}, ${currentOpacity})`;
+        sidebarRef.current.style.background = `rgb(${gray}, ${gray}, ${gray})`;
     }, [config, scale, startH, panelWidth, panelHeight, sidebarRef, BASE_START_W, TARGET_W, TARGET_H, calculateLayout]);
 
     const stopAnimation = () => {

@@ -1,25 +1,10 @@
-/* 启动器分组样式 */
+/* 启动器分组样式 - 使用 mdui-card */
 .launcher-group {
     display: flex;
-    background: var(--bg-transparent);
-    opacity: 0.95;
-    border-radius: var(--widget-border-radius);
-    border: var(--widget-border);
-    overflow: hidden;
-    position: relative;
-    gap: 0;
-    transition: all 0.2s ease;
-    box-shadow: var(--widget-shadow);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-.launcher-group:hover {
-    background: var(--bg-transparent-hover);
-}
-
-.launcher-group::after {
-    display: none;
+    flex-direction: column;
+    gap: 8px;
+    /* padding: 12px; */
+    --mdui-shape-corner-extra-small: 12px;
 }
 
 .launcher-group.layout-vertical {
@@ -28,93 +13,103 @@
 
 .launcher-group.layout-grid,
 .launcher-group.layout-grid_no_text {
-    flex-wrap: wrap;
-    width: 100%;
-    margin-top: 0;
-}
-
-/* 启动器项目 */
-.launcher-item {
-    display: flex;
-    align-items: center;
-    background: transparent;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: none;
-    box-sizing: border-box;
-    position: relative;
-}
-
-.launcher-item:hover {
-    background: rgba(0, 0, 0, 0.04);
-}
-
-.launcher-item:active {
-    background: rgba(0, 0, 0, 0.05);
-    scale: 0.98;
-}
-
-/* 分割线逻辑 */
-.layout-vertical .launcher-item:not(:first-child)::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 12px;
-    right: 12px;
-    height: 1px;
-    background: rgba(0, 0, 0, 0.06);
-}
-
-.layout-grid .launcher-item:not(:nth-child(3n+1))::before,
-.layout-grid_no_text .launcher-item:not(:nth-child(4n+1))::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 10px;
-    bottom: 10px;
-    width: 1px;
-    background: rgba(0, 0, 0, 0.06);
-}
-
-.layout-grid .launcher-item:not(:nth-child(-n+3))::after,
-.layout-grid_no_text .launcher-item:not(:nth-child(-n+4))::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 10px;
-    right: 10px;
-    height: 1px;
-    background: rgba(0, 0, 0, 0.06);
-}
-
-/* 不同布局下的具体尺寸 */
-.layout-vertical .launcher-item {
-    padding: 8px 14px;
     flex-direction: row;
+    flex-wrap: wrap;
 }
 
-.layout-grid .launcher-item {
-    flex: 1 1 30%;
-    min-width: 0;
-    padding: 8px 4px;
+.launcher-group.layout-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.launcher-group.layout-grid_no_text {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* 启动器项目 - 使用 mdui-button variant="elevated" */
+.launcher-item {
+    --mdui-shape-corner-small: 8px;
+    width: 100%;
+    height: auto;
+    min-height: 40px;
+}
+
+/* 垂直布局 */
+.layout-vertical .launcher-item {
+    justify-content: flex-start;
+    text-align: left;
+}
+
+/* 网格布局 */
+.layout-grid .launcher-item::part(button) {
     flex-direction: column;
-    justify-content: center;
-    text-align: center;
-    gap: 4px;
+    padding: 8px 4px;
+    height: auto;
 }
 
-.layout-grid_no_text .launcher-item {
-    flex: 1 1 21%;
-    min-width: 0;
-    padding: 8px;
-    justify-content: center;
+.layout-grid .launcher-item::part(icon) {
+    margin: 0 0 4px 0 !important;
 }
 
-/* 图标与文字 */
+.layout-grid .launcher-item::part(label) {
+    color: rgb(var(--mdui-color-on-surface)) !important;
+    overflow: hidden;
+    max-width: 100%;
+}
+
+/* 无文字网格布局 - 强制居中 */
+.layout-grid_no_text .launcher-item,
+.layout-grid_no_text mdui-button.launcher-item {
+    flex: 0 0 calc(25% - 6px);
+    max-width: calc(25% - 6px);
+    aspect-ratio: 1;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: unset !important;
+}
+
+/* 确保 button 内部完全居中 */
+.layout-grid_no_text .launcher-item::part(button) {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+    min-height: unset !important;
+}
+
+/* 隐藏 label slot，避免占用空间 */
+.layout-grid_no_text .launcher-item::part(label) {
+    display: none !important;
+}
+
+/* 图标 slot 居中 */
+.layout-grid_no_text .launcher-item::part(icon) {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+}
+
+/* 图标本身强制居中 */
+.layout-grid_no_text .launcher-icon {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+}
+
+/* 图标样式 */
 .launcher-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -122,50 +117,80 @@
     flex-shrink: 0;
 }
 
-.layout-vertical .launcher-icon { margin-right: 12px; }
-.launcher-icon img { width: 100%; height: 100%; object-fit: contain; }
-
-.launcher-info {
-    flex: 1;
-    min-width: 0;
-    max-width: calc(100% - 44px);
+.launcher-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
-.layout-grid .launcher-info {
-    max-width: 100%;
-    padding: 0 4px;
-    box-sizing: border-box;
+.launcher-icon-placeholder {
+    width: 24px;
+    height: 24px;
+    background: var(--mdui-color-surface-variant);
+    border-radius: 4px;
 }
 
-.layout-grid_no_text .launcher-info { display: none; }
+/* 网格布局下的图标 */
+.layout-grid .launcher-icon,
+.layout-grid_no_text .launcher-icon {
+    width: 32px;
+    height: 32px;
+}
 
+.layout-grid .launcher-icon-placeholder,
+.layout-grid_no_text .launcher-icon-placeholder {
+    width: 32px;
+    height: 32px;
+}
+
+/* 文字样式 */
 .launcher-name {
-    font-weight: 600;
-    font-size: 12px;
-    color: var(--text-main);
-    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 500;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
     max-width: 100%;
 }
 
-.layout-vertical .launcher-name { font-size: 15px; }
+/* 垂直布局下的文字 */
+.layout-vertical .launcher-name {
+    font-size: 14px;
+}
 
-/* 紧凑文件列表样式 */
-.launcher-group.compact-files .launcher-item {
-    padding: 4px 12px;
-    border-radius: 0;
-    min-height: 28px;
+/* 网格布局下的文字 */
+.layout-grid .launcher-name {
+    font-size: 12px;
+    max-width: 100%;
+}
+
+/* 无文字网格布局 */
+.layout-grid_no_text .launcher-name {
+    display: none;
+}
+
+/* 紧凑文件列表样式 - 保持与 FilesWidget 一致 */
+.launcher-group.compact-files {
+    padding: 8px;
+    gap: 4px;
+}
+
+.compact-files .launcher-item {
+    min-height: 32px;
+    --mdui-shape-corner-small: 6px;
 }
 
 .compact-files .launcher-icon {
-    width: 20px !important;
-    height: 20px !important;
-    margin-right: 8px;
+    width: 18px;
+    height: 18px;
+}
+
+.compact-files .launcher-icon-placeholder {
+    width: 18px;
+    height: 18px;
 }
 
 .compact-files .launcher-name {
     font-size: 13px;
     font-weight: 400;
-    color: #333;
 }

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import 'mdui/components/card.js';
 import LauncherItem from './components/LauncherItem';
 import VolumeWidget from './components/VolumeWidget';
 import FilesWidget from './components/FilesWidget';
@@ -113,7 +114,10 @@ const Sidebar = () => {
                         {config?.widgets?.map((widget, index) => {
                             if (widget.type === 'launcher') {
                                 return (
-                                    <div key={index} className={`launcher-group layout-${widget.layout || 'vertical'}`}>
+                                    <div
+                                        key={index}
+                                        className={`launcher-group layout-${widget.layout || 'vertical'}`}
+                                    >
                                         {widget.targets.map((target, tIndex) => (
                                             <LauncherItem key={tIndex} {...target} />
                                         ))}

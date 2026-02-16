@@ -71,7 +71,7 @@
 }
 
 .expanded #sidebar {
-    background-color: rgba(156, 163, 175, 0.7);
+    background-color: rgb(255, 255, 255);
 }
 
 .expanded #sidebar::before {

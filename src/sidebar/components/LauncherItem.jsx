@@ -7,6 +7,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import 'mdui/components/button.js';
 
 // 全局图标缓存，避免重复从主进程获取相同的图标
 // 格式: { [target]: dataUrl }
@@ -77,18 +78,20 @@ const LauncherItem = ({ name, target, args, isPreview = false }) => {
     };
 
     return (
-        <div className="launcher-item" onClick={handleClick}>
-            <div className="launcher-icon">
+        <mdui-button
+            className="launcher-item"
+            variant="elevated"
+            onClick={handleClick}
+        >
+            <div className="launcher-icon" slot="icon">
                 {icon ? (
                     <img src={icon} alt={name} />
                 ) : (
-                    <div className="launcher-icon-placeholder" style={{ width: '32px', height: '32px', background: '#e5e7eb', borderRadius: '6px' }} />
+                    <div className="launcher-icon-placeholder" />
                 )}
             </div>
-            <div className="launcher-info">
-                <div className="launcher-name">{name}</div>
-            </div>
-        </div>
+            <span className="launcher-name">{name}</span>
+        </mdui-button>
     );
 };
 

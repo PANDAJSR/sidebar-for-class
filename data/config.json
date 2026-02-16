@@ -5,7 +5,7 @@
         "posy": 496,
         "animation_speed": 1,
         "size": 130,
-        "auto_hide": true,
+        "auto_hide": false,
         "panel": {
             "opacity": 0.9,
             "height": 450,
