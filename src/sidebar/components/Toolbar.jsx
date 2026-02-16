@@ -5,7 +5,8 @@
  * @param {boolean} isExpanded - 侧边栏是否展开
  * @param {Function} collapse - 收起侧边栏的函数
  */
-import { useState } from 'react';
+import React from 'react';
+import 'mdui/components/button.js';
 
 const Toolbar = ({ tools = [], isExpanded, collapse, isPreview = false, onScreenshot }) => {
     /**
@@ -87,15 +88,18 @@ const Toolbar = ({ tools = [], isExpanded, collapse, isPreview = false, onScreen
         <div className={`toolbar-widget ${tools.length === 1 ? 'single-tool' : ''}`}>
             <div className="toolbar-buttons">
                 {tools.map((tool, index) => (
-                    <button
+                    <mdui-button
                         key={index}
                         className="toolbar-button"
+                        variant="elevated"
                         onClick={() => handleToolClick(tool)}
                         title={getToolDisplayName(tool)}
                     >
-                        <i className={`fas ${getToolIcon(tool)}`}></i>
+                        <div className="toolbar-icon" slot="icon">
+                            <i className={`fas ${getToolIcon(tool)}`}></i>
+                        </div>
                         <span className="toolbar-button-text">{getToolDisplayName(tool)}</span>
-                    </button>
+                    </mdui-button>
                 ))}
             </div>
         </div>

@@ -35,21 +35,17 @@
     background: var(--bg-transparent-hover);
 }
 
+/* mdui 按钮样式 - 白色背景，悬浮显示主题色 */
 .toolbar-button {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 10px 4px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    min-width: 0;
+    /* 将 elevated 按钮的背景色设为白色 */
+    --mdui-color-surface-container-low: 255, 255, 255 !important;
+    --mdui-color-surface-container: 255, 255, 255 !important;
     flex: 1 1 20%;
+    min-width: 0;
     box-sizing: border-box;
     position: relative;
+    height: auto;
+    min-height: 70px;
 }
 
 .toolbar-widget.single-tool .toolbar-button {
@@ -57,13 +53,42 @@
     max-width: 100%;
 }
 
-.toolbar-button:hover {
-    background: rgba(0, 0, 0, 0.04);
+.toolbar-button::part(button) {
+    border: 2px solid var(--theme-color) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    flex-direction: column;
+    padding: 8px 4px 12px 4px;
+    height: 100%;
+    min-height: unset;
 }
 
-.toolbar-button:active {
-    background: rgba(0, 0, 0, 0.05);
+/* 调整 mdui 按钮内部布局 */
+.toolbar-button::part(icon) {
+    margin: 0 0 2px 0 !important;
+}
+
+.toolbar-button::part(label) {
+    overflow: visible !important;
+    white-space: nowrap;
+}
+
+.toolbar-button:hover::part(button) {
+    background-color: var(--theme-color) !important;
+    border-color: var(--theme-color) !important;
+    color: white !important;
+}
+
+.toolbar-button:active::part(button) {
     scale: 0.98;
+}
+
+/* 悬浮时图标和文字变为白色 */
+.toolbar-button:hover::part(label) {
+    color: white !important;
+}
+
+.toolbar-button:hover .toolbar-icon i {
+    color: white !important;
 }
 
 /* 分割线逻辑 - 考虑标题占据第一个位置的情况 */
@@ -108,13 +133,19 @@
     background: rgba(0, 0, 0, 0.06);
 }
 
-.toolbar-button i {
+.toolbar-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toolbar-icon i {
     font-size: 18px;
     color: var(--text-muted);
     transition: color 0.2s ease;
 }
-
-.toolbar-button:hover i { color: var(--primary-color); }
 
 .toolbar-button-text {
     font-size: 11px;
@@ -127,5 +158,3 @@
     max-width: 100%;
     transition: color 0.2s ease;
 }
-
-.toolbar-button:hover .toolbar-button-text { color: var(--text-main); }

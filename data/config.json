@@ -90,7 +90,7 @@
                 "whiteboard",
                 "show"
             ],
-            "show_only_when_running": true
+            "show_only_when_running": false
         }
     ],
     "automatic": [
