@@ -7,10 +7,11 @@
         "size": 130,
         "auto_hide": false,
         "panel": {
-            "opacity": 0.9,
+            "opacity": 1,
             "height": 450,
             "width": 300
-        }
+        },
+        "theme_color": "#f5fcff"
     },
     "widgets": [
         {

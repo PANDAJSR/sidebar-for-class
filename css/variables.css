@@ -4,6 +4,9 @@
     --content-duration: 0.3s;
     --sidebar-scale: 1;
 
+    /* 主题色 */
+    --theme-color: #5865F2;
+
     /* 半透明背景变量 */
     --bg-transparent: rgba(255, 255, 255, 0.15);
     --bg-transparent-hover: rgba(255, 255, 255, 0.25);

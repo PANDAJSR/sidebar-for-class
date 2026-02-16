@@ -598,5 +598,29 @@ export const useStyles = makeStyles({
         fontSize: '12px',
         color: 'var(--colorNeutralForeground3)',
         lineHeight: '1.4',
+    },
+    // 颜色选择器容器样式
+    colorPickerContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        marginTop: '4px',
+    },
+    // 颜色输入框样式
+    colorInput: {
+        width: '48px',
+        height: '32px',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        padding: '0',
+        backgroundColor: 'transparent',
+    },
+    // 颜色值显示样式
+    colorValue: {
+        fontSize: '14px',
+        fontWeight: '600',
+        color: 'var(--colorBrandForeground1)',
+        fontFamily: 'monospace',
     }
 });

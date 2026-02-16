@@ -96,28 +96,29 @@ function previewConfig(newConfig, dependencies = {}) {
   const { screen, mainWindow } = dependencies;
 
   const baseConfig = getConfigSync();
-  const mergedConfig = {
-    ...baseConfig,
-    ...newConfig,
-    widgets: newConfig.widgets !== undefined ? newConfig.widgets : baseConfig.widgets,
-    transforms: {
-      ...(baseConfig.transforms || {}),
-      ...(newConfig.transforms || {}),
-      display: newConfig.transforms?.display ?? baseConfig.transforms?.display ?? 0,
-      height: newConfig.transforms?.height ?? baseConfig.transforms?.height ?? 64,
-      posy: newConfig.transforms?.posy ?? baseConfig.transforms?.posy ?? 0,
-      size: newConfig.transforms?.size ?? baseConfig.transforms?.size ?? 100,
-      auto_hide: newConfig.transforms?.auto_hide ?? baseConfig.transforms?.auto_hide ?? false,
-      animation_speed: newConfig.transforms?.animation_speed ?? baseConfig.transforms?.animation_speed ?? 1,
-      panel: {
-        ...(baseConfig.transforms?.panel || {}),
-        ...(newConfig.transforms?.panel || {}),
-        width: newConfig.transforms?.panel?.width ?? baseConfig.transforms?.panel?.width ?? 450,
-        height: newConfig.transforms?.panel?.height ?? baseConfig.transforms?.panel?.height ?? 400,
-        opacity: newConfig.transforms?.panel?.opacity ?? baseConfig.transforms?.panel?.opacity ?? 0.9,
-      }
-    }
-  };
+    const mergedConfig = {
+        ...baseConfig,
+        ...newConfig,
+        widgets: newConfig.widgets !== undefined ? newConfig.widgets : baseConfig.widgets,
+        transforms: {
+            ...(baseConfig.transforms || {}),
+            ...(newConfig.transforms || {}),
+            display: newConfig.transforms?.display ?? baseConfig.transforms?.display ?? 0,
+            height: newConfig.transforms?.height ?? baseConfig.transforms?.height ?? 64,
+            posy: newConfig.transforms?.posy ?? baseConfig.transforms?.posy ?? 0,
+            size: newConfig.transforms?.size ?? baseConfig.transforms?.size ?? 100,
+            auto_hide: newConfig.transforms?.auto_hide ?? baseConfig.transforms?.auto_hide ?? false,
+            animation_speed: newConfig.transforms?.animation_speed ?? baseConfig.transforms?.animation_speed ?? 1,
+            theme_color: newConfig.transforms?.theme_color ?? baseConfig.transforms?.theme_color ?? '#5865F2',
+            panel: {
+                ...(baseConfig.transforms?.panel || {}),
+                ...(newConfig.transforms?.panel || {}),
+                width: newConfig.transforms?.panel?.width ?? baseConfig.transforms?.panel?.width ?? 450,
+                height: newConfig.transforms?.panel?.height ?? baseConfig.transforms?.panel?.height ?? 400,
+                opacity: newConfig.transforms?.panel?.opacity ?? baseConfig.transforms?.panel?.opacity ?? 0.9,
+            }
+        }
+    };
 
   const displays = screen.getAllDisplays();
   const targetDisplay = (mergedConfig.transforms.display < displays.length)

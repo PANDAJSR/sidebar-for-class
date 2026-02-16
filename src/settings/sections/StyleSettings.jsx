@@ -88,22 +88,17 @@ const StyleSettings = ({ config, handleTransformChange, styles }) => {
                 </div>
 
                 <div className={styles.formGroup}>
-                    <div className={styles.label}>展开后不透明度</div>
-                    <div className={styles.rangeContainer}>
-                        <mdui-slider
-                            min={0.1}
-                            max={1}
-                            step={0.05}
-                            value={config.transforms?.panel?.opacity || 0.9}
-                            onChange={(e) => {
-                                const newOpacity = parseFloat(e.target.value);
-                                const currentPanelConfig = config.transforms?.panel || {};
-                                handleTransformChange('panel', { ...currentPanelConfig, opacity: newOpacity });
-                            }}
+                    <div className={styles.label}>主题色</div>
+                    <div className={styles.colorPickerContainer}>
+                        <input
+                            type="color"
+                            value={config.transforms?.theme_color || '#5865F2'}
+                            onChange={(e) => handleTransformChange('theme_color', e.target.value)}
+                            className={styles.colorInput}
                         />
-                        <span className={styles.rangeValue}>{((config.transforms?.panel?.opacity || 0.9) * 100).toFixed(0)}%</span>
+                        <span className={styles.colorValue}>{config.transforms?.theme_color || '#5865F2'}</span>
                     </div>
-                    <div className={styles.helpText}>侧边栏展开后的不透明度</div>
+                    <div className={styles.helpText}>设置侧边栏的主题强调色</div>
                 </div>
             </mdui-card>
         </div>

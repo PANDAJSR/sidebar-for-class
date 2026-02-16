@@ -38,6 +38,57 @@
     min-height: 40px;
 }
 
+/* 应用主题色到按钮背景 - 修改 mdui CSS 变量 */
+.launcher-item {
+    /* 将 elevated 按钮的背景色设为白色（mdui 使用 rgb() 格式） */
+    --mdui-color-surface-container-low: 255, 255, 255 !important;
+    --mdui-color-surface-container: 255, 255, 255 !important;
+}
+
+/* 使用 ::part 直接修改按钮样式 */
+.launcher-item::part(button) {
+    border: 2px solid var(--theme-color) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.launcher-item:hover::part(button) {
+    background-color: var(--theme-color) !important;
+    border-color: var(--theme-color) !important;
+    color: white !important;
+}
+
+/* 针对 grid_no_text 布局 */
+.layout-grid_no_text .launcher-item {
+    --mdui-color-surface-container-low: 255, 255, 255 !important;
+    --mdui-color-surface-container: 255, 255, 255 !important;
+}
+
+.layout-grid_no_text .launcher-item::part(button) {
+    border: 2px solid var(--theme-color) !important;
+}
+
+.layout-grid_no_text .launcher-item:hover::part(button) {
+    background-color: var(--theme-color) !important;
+    border-color: var(--theme-color) !important;
+    color: white !important;
+}
+
+/* 针对 grid 布局 */
+.layout-grid .launcher-item {
+    --mdui-color-surface-container-low: 255, 255, 255 !important;
+    --mdui-color-surface-container: 255, 255, 255 !important;
+}
+
+.layout-grid .launcher-item::part(button) {
+    border: 2px solid var(--theme-color) !important;
+}
+
+.layout-grid .launcher-item:hover::part(button) {
+    background-color: var(--theme-color) !important;
+    border-color: var(--theme-color) !important;
+    color: white !important;
+}
+
 /* 垂直布局 */
 .layout-vertical .launcher-item {
     justify-content: flex-start;
