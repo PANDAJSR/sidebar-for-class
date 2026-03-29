@@ -13,11 +13,8 @@ import '../../style.css'
 const rootElement = document.getElementById('app');
 if (rootElement) {
     // 创建 React 根节点并渲染侧边栏组件
-    // 使用 StrictMode 以帮助发现潜在问题
     ReactDOM.createRoot(rootElement).render(
-        <React.StrictMode>
-            <Sidebar />
-        </React.StrictMode>,
+        <Sidebar />,
     )
 } else {
     // 如果找不到挂载点，输出错误信息

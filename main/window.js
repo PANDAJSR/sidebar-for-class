@@ -41,7 +41,7 @@ function createWindow() {
 
   const xPos = screenBounds.x;
 
-  mainWindow = new BrowserWindow({
+  const windowOptions = {
     width: initialWidth,
     height: initialHeight,
     x: xPos,
@@ -53,7 +53,6 @@ function createWindow() {
     movable: false,
     resizable: false,
     hasShadow: false,
-    type: 'toolbar',
     webPreferences: {
       preload: path.join(__dirname, '..', 'preload.js'),
       contextIsolation: true,
@@ -61,15 +60,26 @@ function createWindow() {
       experimentalFeatures: true,
     },
     // backgroundMaterial: 'acrylic',
-  });
+  };
+
+  // toolbar 类型和激进置顶级别在 macOS 上稳定性较差，仅在 Windows 启用
+  if (process.platform === 'win32') {
+    windowOptions.type = 'toolbar';
+  }
+
+  mainWindow = new BrowserWindow(windowOptions);
 
   mainWindow.setVisibleOnAllWorkspaces(true);
 
-  // 定时保持窗口置顶
-  startTopInterval();
+  // 定时保持窗口置顶（仅 Windows 需要）
+  if (process.platform === 'win32') {
+    startTopInterval();
+  }
 
   // 加载页面
-  if (isDev) {
+  if (process.env.SKIP_RENDERER === '1') {
+    mainWindow.loadURL('about:blank');
+  } else if (isDev) {
     mainWindow.loadURL('http://localhost:3000/index.html');
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
@@ -79,7 +89,11 @@ function createWindow() {
   mainWindow.on('ready-to-show', () => mainWindow.show());
   mainWindow.on('blur', () => {
     if (shouldAlwaysOnTop) {
-      mainWindow.setAlwaysOnTop(true, 'screen-saver');
+      if (process.platform === 'win32') {
+        mainWindow.setAlwaysOnTop(true, 'screen-saver');
+      } else {
+        mainWindow.setAlwaysOnTop(true);
+      }
     }
     // 通知渲染进程窗口失去焦点
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -94,6 +108,8 @@ function createWindow() {
  * 启动置顶定时器
  */
 function startTopInterval() {
+  if (process.platform !== 'win32') return;
+
   topInterval = setInterval(() => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       if (shouldAlwaysOnTop) {
@@ -343,4 +359,3 @@ module.exports = {
   notifyDisplaysUpdated,
   blurMainWindow
 };
-

@@ -2,7 +2,18 @@ const { app, shell, screen, ipcMain } = require('electron');
 const path = require('path');
 const { spawn, execSync, execFile } = require('child_process');
 const fs = require('fs');
-const loudness = require('loudness');
+
+let loudnessModule = null;
+
+function getLoudness() {
+    if (process.platform === 'darwin') {
+        return null;
+    }
+    if (!loudnessModule) {
+        loudnessModule = require('loudness');
+    }
+    return loudnessModule;
+}
 
 /**
  * 从 URI 协议中解析出关联的可执行文件路径
@@ -43,6 +54,9 @@ function getExePathFromProtocol(protocol) {
  */
 async function getSystemVolume() {
     try {
+        const loudness = getLoudness();
+        if (!loudness) return 0;
+
         // 如果系统处于静音状态，视作音量为 0
         const isMuted = await loudness.getMuted();
         if (isMuted) return 0;
@@ -63,6 +77,9 @@ let pendingVolume = null;
  * @param {number} value - 音量值 (0-100)
  */
 async function setSystemVolume(value) {
+    const loudness = getLoudness();
+    if (!loudness) return;
+
     // 防止过于频繁调用
     if (isSettingVolume) {
         pendingVolume = value;

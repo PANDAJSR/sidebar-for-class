@@ -106,6 +106,8 @@ function registerIPCHandlers() {
   });
 
   ipcMain.on('set-ignore-mouse', (event, ignore, forward) => {
+    // macOS 下 setIgnoreMouseEvents 与透明无边框窗口组合不稳定，暂时禁用
+    if (process.platform === 'darwin') return;
     setIgnoreMouseEvents(ignore, forward);
   });
 
