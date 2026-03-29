@@ -4,6 +4,24 @@ const { contextBridge, ipcRenderer } = require('electron');
  * 预加载脚本：在渲染进程和主进程之间架起桥梁
  * 安全地暴露部分 API 给渲染进程
  */
+console.log('[Preload] Script start', {
+    pid: process.pid,
+    platform: process.platform,
+    userAgent: process.versions.electron
+});
+
+process.on('uncaughtException', (error) => {
+    console.error('[Preload] uncaughtException', error);
+});
+
+process.on('unhandledRejection', (reason) => {
+    console.error('[Preload] unhandledRejection', reason);
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+    console.log('[Preload] DOMContentLoaded');
+});
+
 contextBridge.exposeInMainWorld('electronAPI', {
     // 调整窗口大小
     resizeWindow: (width, height, y, animate) => ipcRenderer.send('resize-window', width, height, y, animate),
@@ -116,4 +134,3 @@ contextBridge.exposeInMainWorld('electronAPI', {
         return () => ipcRenderer.removeListener('window-blur', subscription);
     },
 });
-

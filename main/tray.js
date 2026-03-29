@@ -4,6 +4,9 @@
  */
 const { Tray, Menu, app, nativeImage } = require('electron');
 const { getMainWindow, createSettingsWindow, getSettingsWindow } = require('./window');
+const { createLogger, serializeError } = require('./logger');
+
+const log = createLogger('tray');
 
 let tray = null;
 let isWindowVisible = true;
@@ -20,7 +23,11 @@ function createTrayIcon() {
     </svg>
   `;
   const dataUrl = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
-  return nativeImage.createFromDataURL(dataUrl);
+  const image = nativeImage.createFromDataURL(dataUrl);
+  log.debug('tray.icon.created', {
+    isEmpty: image.isEmpty()
+  });
+  return image;
 }
 
 /**
@@ -30,6 +37,10 @@ function createTrayIcon() {
 function createTrayMenu() {
   const mainWindow = getMainWindow();
   const windowVisibleText = mainWindow && mainWindow.isVisible() ? '隐藏窗口' : '显示窗口';
+  log.debug('tray.menu.build', {
+    hasMainWindow: Boolean(mainWindow),
+    mainWindowVisible: mainWindow ? mainWindow.isVisible() : null
+  });
 
   const template = [
     {
@@ -71,9 +82,11 @@ function toggleWindowVisibility() {
   if (mainWindow.isVisible()) {
     mainWindow.hide();
     isWindowVisible = false;
+    log.info('tray.toggle-window', { action: 'hide' });
   } else {
     mainWindow.show();
     isWindowVisible = true;
+    log.info('tray.toggle-window', { action: 'show' });
   }
   
   updateTrayMenu();
@@ -92,20 +105,24 @@ function updateTrayMenu() {
  */
 function createTray() {
   if (tray) {
+    log.warn('tray.create.skip', { reason: 'already-created' });
     return;
   }
 
   try {
+    log.info('tray.create.start', { platform: process.platform });
     const icon = createTrayIcon();
     tray = new Tray(icon);
     tray.setToolTip('Sidebar for Class');
     tray.setContextMenu(createTrayMenu());
+    log.info('tray.create.success');
 
     tray.on('click', () => {
+      log.debug('tray.click');
       toggleWindowVisibility();
     });
   } catch (error) {
-    console.error('创建托盘图标失败:', error);
+    log.error('tray.create.failed', serializeError(error));
   }
 }
 
@@ -114,6 +131,7 @@ function createTray() {
  */
 function destroyTray() {
   if (tray) {
+    log.info('tray.destroy');
     tray.destroy();
     tray = null;
   }

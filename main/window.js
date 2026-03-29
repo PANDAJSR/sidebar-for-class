@@ -1,12 +1,11 @@
-/**
- * 窗口管理模块
- * 负责主窗口和设置窗口的创建与管理
- */
 const { BrowserWindow } = require('electron');
 const path = require('path');
 const { isDev } = require('./constants');
 const { getTargetDisplay, calculateWindowYPosition, calculateWindowXPosition } = require('./display');
 const { getConfigSync } = require('./config');
+const { createLogger } = require('./logger');
+
+const log = createLogger('window');
 
 let mainWindow = null;
 let settingsWindow = null;
@@ -14,12 +13,12 @@ let shouldAlwaysOnTop = true;
 let topInterval = null;
 let timerWindow = null;
 
-
 /**
  * 创建主窗口
  * @returns {BrowserWindow} 主窗口实例
  */
 function createWindow() {
+  log.info('create-main-window.start');
   const config = getConfigSync();
   const transforms = config.transforms || {};
   const panel = transforms.panel || {};
@@ -67,7 +66,30 @@ function createWindow() {
     windowOptions.type = 'toolbar';
   }
 
+  log.info('create-main-window.options', {
+    platform: process.platform,
+    isDev,
+    bounds: { width: initialWidth, height: initialHeight, x: xPos, y: yPos },
+    targetDisplay: {
+      id: targetDisplay.id,
+      bounds: targetDisplay.bounds
+    },
+    windowOptions: {
+      frame: windowOptions.frame,
+      transparent: windowOptions.transparent,
+      alwaysOnTop: windowOptions.alwaysOnTop,
+      skipTaskbar: windowOptions.skipTaskbar,
+      movable: windowOptions.movable,
+      resizable: windowOptions.resizable,
+      hasShadow: windowOptions.hasShadow,
+      type: windowOptions.type || null
+    }
+  });
+
   mainWindow = new BrowserWindow(windowOptions);
+  log.info('create-main-window.created', {
+    windowId: mainWindow.id
+  });
 
   mainWindow.setVisibleOnAllWorkspaces(true);
 
@@ -78,15 +100,22 @@ function createWindow() {
 
   // 加载页面
   if (process.env.SKIP_RENDERER === '1') {
+    log.warn('main-window.load.blank', { reason: 'SKIP_RENDERER=1' });
     mainWindow.loadURL('about:blank');
   } else if (isDev) {
+    log.info('main-window.load.url', { url: 'http://localhost:3000/index.html' });
     mainWindow.loadURL('http://localhost:3000/index.html');
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+    const filePath = path.join(__dirname, '../dist/index.html');
+    log.info('main-window.load.file', { filePath });
+    mainWindow.loadFile(filePath);
   }
 
   // 事件监听
-  mainWindow.on('ready-to-show', () => mainWindow.show());
+  mainWindow.on('ready-to-show', () => {
+    log.info('main-window.ready-to-show', { windowId: mainWindow.id });
+    mainWindow.show();
+  });
   mainWindow.on('blur', () => {
     if (shouldAlwaysOnTop) {
       if (process.platform === 'win32') {
@@ -153,6 +182,7 @@ function getTimerWindow() {
  */
 function setAlwaysOnTopFlag(flag) {
   shouldAlwaysOnTop = flag;
+  log.info('main-window.always-on-top.update', { flag });
   if (mainWindow) {
     mainWindow.setAlwaysOnTop(flag, 'screen-saver');
   }
@@ -166,7 +196,10 @@ function setAlwaysOnTopFlag(flag) {
  * @param {Object|null} config - 配置对象（可选，如果不提供则从文件读取）
  */
 function resizeMainWindow(width, height, y = null, config = null) {
-  if (!mainWindow) return;
+  if (!mainWindow) {
+    log.warn('main-window.resize.skip', { reason: 'main-window-not-created' });
+    return;
+  }
 
   const finalConfig = config || getConfigSync();
   const transforms = finalConfig.transforms || { display: 0, height: 64, posy: 0 };
@@ -229,16 +262,19 @@ function createSettingsWindow() {
       webSecurity: false,
     }
   });
+  log.info('settings-window.created', { windowId: settingsWindow.id, isDev });
 
   // 加载设置页面
   if (isDev) {
     settingsWindow.loadURL('http://localhost:3000/settings.html');
   } else {
-    settingsWindow.loadFile(path.join(__dirname, '../dist/settings.html'));
+    const filePath = path.join(__dirname, '../dist/settings.html');
+    settingsWindow.loadFile(filePath);
   }
 
   // 窗口关闭时清理引用
   settingsWindow.on('closed', () => {
+    log.info('settings-window.closed', { windowId: settingsWindow.id });
     settingsWindow = null;
   });
 }
@@ -274,13 +310,15 @@ function createTimerWindow() {
       nodeIntegration: false,
     }
   });
+  log.info('timer-window.created', { windowId: timerWindow.id, isDev });
   timerWindow.setAlwaysOnTop(true, 'screen-saver');
 
   // 加载计时器页面
   if (isDev) {
     timerWindow.loadURL('http://localhost:3000/timer.html');
   } else {
-    timerWindow.loadFile(path.join(__dirname, '../dist/timer.html'));
+    const filePath = path.join(__dirname, '../dist/timer.html');
+    timerWindow.loadFile(filePath);
   }
 
   // 监听全屏状态变化事件，通知渲染进程
@@ -314,6 +352,7 @@ function createTimerWindow() {
 
   // 窗口关闭时清理引用
   timerWindow.on('closed', () => {
+    log.info('timer-window.closed', { windowId: timerWindow.id });
     timerWindow = null;
   });
 }

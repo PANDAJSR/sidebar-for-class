@@ -10,11 +10,15 @@ const { getVolume, setVolume, executeCommand, showDesktop, taskView, closeFrontW
 const { launchApp, getFileIcon } = require('./launcher');
 const { getFilesInFolder, readFileContent, writeFileContent, deleteFile, renameFile } = require('./fileSystem');
 const { takeScreenshot } = require('./screenshot');
+const { createLogger } = require('./logger');
+
+const log = createLogger('ipc');
 
 /**
  * 注册所有 IPC 处理器
  */
 function registerIPCHandlers() {
+  log.info('register.start');
   // ===== 窗口管理 =====
 
   ipcMain.on('resize-window', (event, width, height, y, animate = true) => {
@@ -480,20 +484,32 @@ function registerIPCHandlers() {
   ipcMain.handle('screenshot', async () => {
     return await takeScreenshot();
   });
+
+  log.info('register.done');
 }
 
 /**
  * 注册显示器事件监听器
  */
 function registerDisplayEventListeners() {
+  log.info('display-listeners.register.start');
   const updateDisplays = () => {
     const displays = getAllDisplays();
+    log.info('display-listeners.changed', {
+      count: displays.length,
+      displays: displays.map(display => ({
+        id: display.id,
+        bounds: display.bounds,
+        scaleFactor: display.scaleFactor
+      }))
+    });
     notifyDisplaysUpdated(displays);
   };
 
   screen.on('display-added', updateDisplays);
   screen.on('display-removed', updateDisplays);
   screen.on('display-metrics-changed', updateDisplays);
+  log.info('display-listeners.register.done');
 }
 
 module.exports = {

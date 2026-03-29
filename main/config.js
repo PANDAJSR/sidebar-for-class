@@ -7,6 +7,9 @@ const fs = require('fs');
 
 const { app } = require('electron');
 const { DEFAULT_CONFIG } = require('./default-config');
+const { createLogger, serializeError } = require('./logger');
+
+const log = createLogger('config');
 
 // 获取基础路径：开发环境下是项目根目录，生产环境下是可执行文件所在目录
 const isDev = !app.isPackaged;
@@ -17,9 +20,17 @@ const basePath = isDev
 const DATA_DIR = path.join(basePath, 'data');
 const CONFIG_PATH = path.join(DATA_DIR, 'config.json');
 
+log.info('paths.initialized', {
+  isDev,
+  basePath,
+  dataDir: DATA_DIR,
+  configPath: CONFIG_PATH
+});
+
 // 确保数据目录存在
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
+  log.info('data-dir.created', { dataDir: DATA_DIR });
 }
 
 /**
@@ -29,9 +40,9 @@ if (!fs.existsSync(DATA_DIR)) {
 function releaseDefaultConfig() {
   try {
     fs.writeFileSync(CONFIG_PATH, JSON.stringify(DEFAULT_CONFIG, null, 4), 'utf8');
-    console.log('[Config] 已释放默认配置文件到:', CONFIG_PATH);
+    log.warn('config.released-default', { configPath: CONFIG_PATH });
   } catch (e) {
-    console.error('[Config] 释放默认配置文件失败:', e);
+    log.error('config.release-default.failed', serializeError(e));
   }
   return DEFAULT_CONFIG;
 }
@@ -41,15 +52,25 @@ function releaseDefaultConfig() {
  * @returns {Object} 配置对象
  */
 function getConfigSync() {
+  log.debug('config.read.start', { configPath: CONFIG_PATH });
   if (fs.existsSync(CONFIG_PATH)) {
     try {
       const content = fs.readFileSync(CONFIG_PATH, 'utf8');
-      return JSON.parse(content);
+      const parsed = JSON.parse(content);
+      log.debug('config.read.success', {
+        configPath: CONFIG_PATH,
+        bytes: Buffer.byteLength(content, 'utf8')
+      });
+      return parsed;
     } catch (e) {
-      console.error('[Config] 解析配置文件失败:', e);
+      log.error('config.read.failed', {
+        configPath: CONFIG_PATH,
+        error: serializeError(e)
+      });
     }
   }
   // 配置文件不存在，释放默认配置
+  log.warn('config.missing.use-default', { configPath: CONFIG_PATH });
   return releaseDefaultConfig();
 }
 
@@ -65,6 +86,11 @@ function updateConfig(newConfig, dependencies = {}) {
   try {
     const { displayBounds, ...configToSave } = newConfig;
     fs.writeFileSync(CONFIG_PATH, JSON.stringify(configToSave, null, 4), 'utf8');
+    log.info('config.write.success', {
+      configPath: CONFIG_PATH,
+      keys: Object.keys(configToSave || {}),
+      hasDisplayBoundsField: displayBounds !== undefined
+    });
 
     const displays = screen.getAllDisplays();
     const targetDisplay = (newConfig.transforms?.display < displays.length)
@@ -79,9 +105,12 @@ function updateConfig(newConfig, dependencies = {}) {
       }
     });
 
+    log.debug('config.broadcast.updated', {
+      windowCount: BrowserWindow.getAllWindows().length
+    });
     return configWithBounds;
   } catch (e) {
-    console.error('保存配置文件失败:', e);
+    log.error('config.write.failed', serializeError(e));
     throw e;
   }
 }
@@ -132,8 +161,12 @@ function previewConfig(newConfig, dependencies = {}) {
           win.webContents.send('config-updated', configWithBounds);
         }
       });
-  
-      return configWithBounds;}
+
+      log.debug('config.preview.broadcast', {
+        windowCount: BrowserWindow.getAllWindows().length
+      });
+      return configWithBounds;
+}
 
 /**
  * 获取数据目录路径
