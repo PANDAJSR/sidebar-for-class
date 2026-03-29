@@ -7,8 +7,9 @@
  * @param {boolean} isPreview - 是否为预览模式
  */
 import React from 'react';
+import 'mdui/components/button.js';
 
-const ICCCeControl = ({ functions = [], isExpanded, collapse, isPreview = false }) => {
+const ICCCEControl = ({ functions = [], isExpanded, collapse, isPreview = false }) => {
     /**
      * 处理功能按钮点击事件
      * @param {string} func - 功能名称
@@ -77,19 +78,22 @@ const ICCCeControl = ({ functions = [], isExpanded, collapse, isPreview = false 
             <div className="toolbar-buttons">
                 <div className="widget-header-title-inner">ICC-CE</div>
                 {functions.map((func, index) => (
-                    <button
+                    <mdui-button
                         key={index}
                         className="toolbar-button"
+                        variant="elevated"
                         onClick={() => handleFuncClick(func)}
                         title={getFuncDisplayName(func)}
                     >
-                        <i className={`fas ${getFuncIcon(func)}`}></i>
+                        <div className="toolbar-icon" slot="icon">
+                            <i className={`fas ${getFuncIcon(func)}`}></i>
+                        </div>
                         <span className="toolbar-button-text">{getFuncDisplayName(func)}</span>
-                    </button>
+                    </mdui-button>
                 ))}
             </div>
         </div>
     );
 };
 
-export default ICCCeControl;
+export default ICCCEControl;

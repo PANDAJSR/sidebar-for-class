@@ -39,6 +39,34 @@ function openFolder(filePath) {
 }
 
 /**
+ * 用记事本打开指定文件
+ * @param {string} filePath - 文件路径
+ */
+function openWithNotepad(filePath) {
+  if (!filePath) return;
+
+  const path = require('path');
+  const { getDataDir } = require('./config');
+
+  // 处理相对路径，相对于数据目录
+  let targetPath = filePath;
+  if (!path.isAbsolute(filePath) && !filePath.includes('%')) {
+    targetPath = path.join(getDataDir(), filePath);
+  }
+
+  const resolvedPath = require('./system').resolveWindowsEnv
+    ? require('./system').resolveWindowsEnv(targetPath)
+    : targetPath;
+
+  // 使用 notepad.exe 打开文件
+  exec(`notepad.exe "${resolvedPath}"`, (error) => {
+    if (error) {
+      console.error('[System] 用记事本打开文件失败:', error);
+    }
+  });
+}
+
+/**
  * 检查是否以管理员身份运行
  * @returns {boolean} 是否具有管理员权限
  */
@@ -186,6 +214,7 @@ module.exports = {
   closeFrontWindow,
   openFile,
   openFolder,
+  openWithNotepad,
   copyImageToClipboard,
   saveEditedImage,
   isProcessRunning

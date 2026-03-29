@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs');
 
 const { app } = require('electron');
+const { DEFAULT_CONFIG } = require('./default-config');
 
 // 获取基础路径：开发环境下是项目根目录，生产环境下是可执行文件所在目录
 const isDev = !app.isPackaged;
@@ -22,6 +23,20 @@ if (!fs.existsSync(DATA_DIR)) {
 }
 
 /**
+ * 释放默认配置文件
+ * @returns {Object} 默认配置对象
+ */
+function releaseDefaultConfig() {
+  try {
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(DEFAULT_CONFIG, null, 4), 'utf8');
+    console.log('[Config] 已释放默认配置文件到:', CONFIG_PATH);
+  } catch (e) {
+    console.error('[Config] 释放默认配置文件失败:', e);
+  }
+  return DEFAULT_CONFIG;
+}
+
+/**
  * 同步读取配置文件
  * @returns {Object} 配置对象
  */
@@ -31,10 +46,11 @@ function getConfigSync() {
       const content = fs.readFileSync(CONFIG_PATH, 'utf8');
       return JSON.parse(content);
     } catch (e) {
-      console.error('解析配置文件失败:', e);
+      console.error('[Config] 解析配置文件失败:', e);
     }
   }
-  return { widgets: [], transforms: { display: 0, height: 64, posy: 0 } };
+  // 配置文件不存在，释放默认配置
+  return releaseDefaultConfig();
 }
 
 /**
@@ -80,28 +96,29 @@ function previewConfig(newConfig, dependencies = {}) {
   const { screen, mainWindow } = dependencies;
 
   const baseConfig = getConfigSync();
-  const mergedConfig = {
-    ...baseConfig,
-    ...newConfig,
-    widgets: newConfig.widgets !== undefined ? newConfig.widgets : baseConfig.widgets,
-    transforms: {
-      ...(baseConfig.transforms || {}),
-      ...(newConfig.transforms || {}),
-      display: newConfig.transforms?.display ?? baseConfig.transforms?.display ?? 0,
-      height: newConfig.transforms?.height ?? baseConfig.transforms?.height ?? 64,
-      posy: newConfig.transforms?.posy ?? baseConfig.transforms?.posy ?? 0,
-      size: newConfig.transforms?.size ?? baseConfig.transforms?.size ?? 100,
-      auto_hide: newConfig.transforms?.auto_hide ?? baseConfig.transforms?.auto_hide ?? false,
-      animation_speed: newConfig.transforms?.animation_speed ?? baseConfig.transforms?.animation_speed ?? 1,
-      panel: {
-        ...(baseConfig.transforms?.panel || {}),
-        ...(newConfig.transforms?.panel || {}),
-        width: newConfig.transforms?.panel?.width ?? baseConfig.transforms?.panel?.width ?? 450,
-        height: newConfig.transforms?.panel?.height ?? baseConfig.transforms?.panel?.height ?? 400,
-        opacity: newConfig.transforms?.panel?.opacity ?? baseConfig.transforms?.panel?.opacity ?? 0.9,
-      }
-    }
-  };
+    const mergedConfig = {
+        ...baseConfig,
+        ...newConfig,
+        widgets: newConfig.widgets !== undefined ? newConfig.widgets : baseConfig.widgets,
+        transforms: {
+            ...(baseConfig.transforms || {}),
+            ...(newConfig.transforms || {}),
+            display: newConfig.transforms?.display ?? baseConfig.transforms?.display ?? 0,
+            height: newConfig.transforms?.height ?? baseConfig.transforms?.height ?? 64,
+            posy: newConfig.transforms?.posy ?? baseConfig.transforms?.posy ?? 0,
+            size: newConfig.transforms?.size ?? baseConfig.transforms?.size ?? 100,
+            auto_hide: newConfig.transforms?.auto_hide ?? baseConfig.transforms?.auto_hide ?? false,
+            animation_speed: newConfig.transforms?.animation_speed ?? baseConfig.transforms?.animation_speed ?? 1,
+            theme_color: newConfig.transforms?.theme_color ?? baseConfig.transforms?.theme_color ?? '#5865F2',
+            panel: {
+                ...(baseConfig.transforms?.panel || {}),
+                ...(newConfig.transforms?.panel || {}),
+                width: newConfig.transforms?.panel?.width ?? baseConfig.transforms?.panel?.width ?? 450,
+                height: newConfig.transforms?.panel?.height ?? baseConfig.transforms?.panel?.height ?? 400,
+                opacity: newConfig.transforms?.panel?.opacity ?? baseConfig.transforms?.panel?.opacity ?? 0.9,
+            }
+        }
+    };
 
   const displays = screen.getAllDisplays();
   const targetDisplay = (mergedConfig.transforms.display < displays.length)

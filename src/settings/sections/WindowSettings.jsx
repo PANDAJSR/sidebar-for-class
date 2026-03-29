@@ -7,22 +7,17 @@
  */
 
 import React from 'react';
-import {
-    Card,
-    Label,
-    Input,
-    Slider,
-    Switch,
-    useId,
-    Dropdown,
-    Option,
-} from "@fluentui/react-components";
+import 'mdui/components/card.js';
+import 'mdui/components/slider.js';
+import 'mdui/components/switch.js';
+import 'mdui/components/text-field.js';
+import 'mdui/components/dropdown.js';
+import 'mdui/components/menu.js';
+import 'mdui/components/menu-item.js';
+import 'mdui/components/button.js';
 import { useState, useEffect } from 'react';
 
 const WindowSettings = ({ config, handleTransformChange, styles }) => {
-    // 生成唯一的 ID 用于表单元素
-    const sliderId = useId("slider");
-    const dropdownId = useId("display-dropdown");
     // 显示器列表
     const [displays, setDisplays] = useState([]);
 
@@ -50,75 +45,74 @@ const WindowSettings = ({ config, handleTransformChange, styles }) => {
         <div className={styles.section}>
             <div className={styles.sectionHeader}>
                 <div className={styles.title}>窗口设置</div>
+                <div className={styles.description}>配置侧边栏窗口的显示器、位置和尺寸。</div>
             </div>
 
-            <Card className={styles.card}>
+            <div className={styles.groupTitle}>显示器</div>
+            <mdui-card variant="filled" className={styles.card}>
                 <div className={styles.formGroup}>
-                    <Label className={styles.label} htmlFor={dropdownId}>显示器</Label>
-                    <Dropdown
-                        id={dropdownId}
-                        value={displays[config.transforms.display] ?
-                            (displays[config.transforms.display].label || `显示器 ${config.transforms.display} (${displays[config.transforms.display].bounds.width}x${displays[config.transforms.display].bounds.height})`) :
-                            `显示器 ${config.transforms.display}`}
-                        selectedOptions={[config.transforms.display.toString()]}
-                        onOptionSelect={(_, data) => handleTransformChange('display', parseInt(data.selectedOptions[0]))}
-                    >
-                        {displays.map((display, index) => (
-                            <Option key={index} value={index.toString()}>
-                                {display.label || `显示器 ${index} (${display.bounds.width}x${display.bounds.height})`}
-                            </Option>
-                        ))}
-                    </Dropdown>
+                    <div className={styles.label}>选择显示器</div>
+                    <mdui-dropdown>
+                        <mdui-button slot="trigger" variant="tonal" style={{ width: '120px' }}>
+                            {displays[config.transforms.display] ?
+                                (displays[config.transforms.display].label || `显示器 ${config.transforms.display} (${displays[config.transforms.display].bounds.width}x${displays[config.transforms.display].bounds.height})`) :
+                                `显示器 ${config.transforms.display}`}
+                        </mdui-button>
+                        <mdui-menu>
+                            {displays.map((display, index) => (
+                                <mdui-menu-item
+                                    key={index}
+                                    value={index.toString()}
+                                    onClick={() => handleTransformChange('display', index)}
+                                >
+                                    {display.label || `显示器 ${index} (${display.bounds.width}x${display.bounds.height})`}
+                                </mdui-menu-item>
+                            ))}
+                        </mdui-menu>
+                    </mdui-dropdown>
                     <div className={styles.helpText}>选择侧边栏所在的屏幕</div>
                 </div>
-            </Card>
+            </mdui-card>
 
-            <Card className={styles.card}>
+            <div className={styles.groupTitle}>位置与尺寸</div>
+            <mdui-card variant="filled" className={styles.card}>
                 <div className={styles.formGroup}>
-                    <Label className={styles.label} htmlFor={sliderId}>垂直位置</Label>
+                    <div className={styles.label}>垂直位置</div>
                     <div className={styles.rangeContainer}>
-                        <Slider
-                            id={sliderId}
+                        <mdui-slider
                             min={0}
                             max={config.displayBounds?.height || 2000}
                             value={config.transforms.posy}
-                            onChange={(_, data) => handleTransformChange('posy', data.value)}
+                            onChange={(e) => handleTransformChange('posy', parseInt(e.target.value))}
                         />
                         <span className={styles.rangeValue}>{config.transforms.posy}px</span>
                     </div>
                     <div className={styles.helpText}>侧边栏中心的垂直坐标</div>
                 </div>
-            </Card>
 
-            <Card className={styles.card}>
                 <div className={styles.formGroup}>
-                    <Label>初始高度</Label>
-                    <Input
+                    <div className={styles.label}>初始高度</div>
+                    <mdui-text-field
                         type="number"
-                        contentAfter="px"
                         value={config.transforms.height}
-                        onChange={(_, data) => handleTransformChange('height', parseInt(data.value))}
+                        onChange={(e) => handleTransformChange('height', parseInt(e.target.value))}
+                        end-icon="px"
+                        style={{ width: '200px' }}
                     />
                     <div className={styles.helpText}>收起状态下的侧边栏的高度</div>
                 </div>
-            </Card>
 
-            <Card className={styles.card}>
                 <div className={styles.formGroup}>
                     <div className={styles.switchRow}>
-                        <Label>自动收起</Label>
-                        <Switch
+                        <div className={styles.label}>自动收起</div>
+                        <mdui-switch
                             checked={config.transforms.auto_hide}
-                            onChange={(_, data) => handleTransformChange('auto_hide', data.checked)}
+                            onChange={(e) => handleTransformChange('auto_hide', e.target.checked)}
                         />
                     </div>
                     <div className={styles.helpText}>失去焦点时自动收起侧边栏</div>
                 </div>
-            </Card>
-
-
-
-
+            </mdui-card>
         </div>
     );
 };

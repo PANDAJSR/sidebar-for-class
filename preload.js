@@ -6,7 +6,10 @@ const { contextBridge, ipcRenderer } = require('electron');
  */
 contextBridge.exposeInMainWorld('electronAPI', {
     // 调整窗口大小
-    resizeWindow: (width, height, y) => ipcRenderer.send('resize-window', width, height, y),
+    resizeWindow: (width, height, y, animate) => ipcRenderer.send('resize-window', width, height, y, animate),
+
+    // 实时调整窗口大小（用于拖拽调整）
+    resizeWindowRealtime: (width, height) => ipcRenderer.send('resize-window-realtime', width, height),
 
     // 设置鼠标穿透（预留接口）
     setIgnoreMouse: (ignore, forward) => ipcRenderer.send('set-ignore-mouse', ignore, forward),
@@ -84,6 +87,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // 关闭当前窗口
     closeWindow: () => ipcRenderer.send('close-window'),
 
+    // 全屏控制
+    setFullScreen: (flag, animate) => ipcRenderer.send('set-fullscreen', flag, animate),
+    isFullScreen: () => ipcRenderer.invoke('is-fullscreen'),
+    onFullScreenChanged: (callback) => {
+        const subscription = (event, isFullScreen) => callback(isFullScreen);
+        ipcRenderer.on('fullscreen-changed', subscription);
+        return () => ipcRenderer.removeListener('fullscreen-changed', subscription);
+    },
+
     // 关闭窗口
     closeFrontWindow: () => ipcRenderer.send('close-front-window'),
     
@@ -93,6 +105,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // 打开文件/文件夹
     openFile: (path) => ipcRenderer.send('open-file', path),
     openFolder: (path) => ipcRenderer.send('open-folder', path),
+    openWithNotepad: (path) => ipcRenderer.send('open-with-notepad', path),
     copyImage: (path) => ipcRenderer.send('copy-image', path),
     saveEditedImage: (path, data) => ipcRenderer.send('save-edited-image', path, data),
 

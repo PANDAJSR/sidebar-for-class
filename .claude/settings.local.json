@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(src/timer/Timer.css:*)",
+      "WebSearch",
+      "Bash(echo:*)",
+      "WebFetch(domain:opencode.ai)",
+      "WebFetch(domain:open-code.ai)"
     ]
   }
 }

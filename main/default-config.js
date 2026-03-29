@@ -1,17 +1,20 @@
-{
+/**
+ * 默认配置文件
+ * 打包时内置到 exe 中，首次运行时自动释放
+ */
+const DEFAULT_CONFIG = {
     "transforms": {
         "display": 0,
         "height": 64,
-        "posy": 496,
+        "posy": 472,
         "animation_speed": 1,
         "size": 130,
-        "auto_hide": false,
+        "auto_hide": true,
         "panel": {
-            "opacity": 1,
+            "opacity": 0.9,
             "height": 450,
             "width": 300
-        },
-        "theme_color": "#f5fcff"
+        }
     },
     "widgets": [
         {
@@ -60,48 +63,23 @@
         },
         {
             "type": "volume_slider",
-            "range": [
-                0,
-                100
-            ]
+            "range": [0, 100]
         },
         {
             "type": "toolbar",
-            "tools": [
-                "timer",
-                "screenshot",
-                "touch_keyboard"
-            ]
+            "tools": ["timer", "screenshot", "touch_keyboard"]
         },
         {
             "type": "toolbar",
-            "tools": [
-                "show_desktop",
-                "taskview",
-                "close_front_window"
-            ]
+            "tools": ["show_desktop", "taskview", "close_front_window"]
         },
         {
             "type": "iccce_control",
-            "functions": [
-                "randone",
-                "rand",
-                "timer",
-                "whiteboard",
-                "show"
-            ],
-            "show_only_when_running": false
+            "functions": ["randone", "rand", "timer", "whiteboard", "show"],
+            "show_only_when_running": true
         }
     ],
-    "automatic": [
-        {
-            "name": "",
-            "on": [
-                "startup"
-            ],
-            "script": "testps.ps1"
-        }
-    ],
+    "automatic": [],
     "helper_tools": {
         "auto_kill_similar": false,
         "auto_kill_timer": false,
@@ -112,4 +90,6 @@
         "enable_animations": "partial",
         "enable_sound": true
     }
-}
+};
+
+module.exports = { DEFAULT_CONFIG };

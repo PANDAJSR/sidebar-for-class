@@ -210,6 +210,7 @@ function createSettingsWindow() {
       preload: path.join(__dirname, '..', 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      webSecurity: false,
     }
   });
 
@@ -265,6 +266,35 @@ function createTimerWindow() {
   } else {
     timerWindow.loadFile(path.join(__dirname, '../dist/timer.html'));
   }
+
+  // 监听全屏状态变化事件，通知渲染进程
+  timerWindow.on('enter-full-screen', () => {
+    if (timerWindow && !timerWindow.isDestroyed()) {
+      timerWindow.webContents.send('fullscreen-changed', true);
+    }
+  });
+
+  timerWindow.on('leave-full-screen', () => {
+    if (timerWindow && !timerWindow.isDestroyed()) {
+      timerWindow.webContents.send('fullscreen-changed', false);
+
+      // 如果不是程序控制的全屏操作（比如用户按 ESC），需要恢复窗口
+      if (!timerWindow._programmaticFullScreen && timerWindow._originalBounds) {
+        const originalBounds = timerWindow._originalBounds;
+        timerWindow._originalBounds = null;
+
+        // 延迟恢复窗口大小
+        setTimeout(() => {
+          if (timerWindow && !timerWindow.isDestroyed()) {
+            timerWindow.setMinimumSize(0, 0);
+            timerWindow.setMaximumSize(10000, 10000);
+            timerWindow.setBounds(originalBounds);
+            timerWindow.setMinimumSize(300, 150);
+          }
+        }, 50);
+      }
+    }
+  });
 
   // 窗口关闭时清理引用
   timerWindow.on('closed', () => {

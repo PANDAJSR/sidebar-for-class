@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { Card, Body1 } from "@fluentui/react-components";
+import 'mdui/components/card.js';
 
 const BasicSettings = ({ config, updateConfig, styles }) => {
     return (
@@ -17,11 +17,13 @@ const BasicSettings = ({ config, updateConfig, styles }) => {
                 <div className={styles.description}>配置应用程序的基本选项和偏好设置。</div>
             </div>
             <div className={styles.groupTitle}>常规</div>
-            <Card className={styles.card}>
+            <mdui-card variant="filled" className={styles.card}>
                 <div className={styles.formGroup}>
-                    <Body1 color="var(--colorNeutralForeground2)">基本设置内容将在这里显示。</Body1>
+                    <span style={{ color: 'rgb(var(--mdui-color-on-surface-variant))' }}>
+                        基本设置内容将在这里显示。
+                    </span>
                 </div>
-            </Card>
+            </mdui-card>
         </div>
     );
 };

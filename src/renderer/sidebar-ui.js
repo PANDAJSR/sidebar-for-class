@@ -68,10 +68,7 @@ export function updateSidebarStyles(sidebar, currentConfig, progress, START_W, T
         }
     }
 
-    // 根据进度计算背景颜色（从灰色渐变到白色，透明度也变化）
+    // 根据进度计算背景颜色（从灰色渐变到白色，不透明）
     const gray = Math.floor(156 + (255 - 156) * progress);
-    const targetOpacity = currentConfig?.transforms?.panel?.opacity || 0.9;
-    const startOpacity = 0.6; // 收起状态的透明度
-    const currentOpacity = startOpacity + (targetOpacity - startOpacity) * progress;
-    sidebar.style.background = `rgba(${gray}, ${gray}, ${gray}, ${currentOpacity})`;
+    sidebar.style.background = `rgb(${gray}, ${gray}, ${gray})`;
 }

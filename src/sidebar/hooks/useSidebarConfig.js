@@ -29,6 +29,12 @@ const useSidebarConfig = () => {
                     setPanelHeight(c.transforms.panel.height);
                 }
             }
+            // 应用主题色
+            if (c.transforms.theme_color) {
+                document.documentElement.style.setProperty('--theme-color', c.transforms.theme_color);
+            } else {
+                document.documentElement.style.setProperty('--theme-color', '#5865F2');
+            }
         }
         const scaleValue = (typeof c.transforms?.size === 'number' && c.transforms.size > 0)
             ? c.transforms.size / 100

@@ -42,7 +42,6 @@ body {
     border-radius: 12px;
     box-sizing: border-box;
     overflow: hidden; /* 确保内容不会超出圆角边界 */
-    transition: gap 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 button {
@@ -57,6 +56,25 @@ button {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    position: relative;
+}
+
+/* 计时进度条 */
+.timer-progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background-color: rgba(0, 0, 0, 0.1);
+    z-index: 200;
+    overflow: hidden;
+}
+
+.timer-progress-fill {
+    height: 100%;
+    background-color: var(--accent-color);
+    transition: width 1s linear;
 }
 
 .close-window-button {
@@ -74,7 +92,7 @@ button {
     justify-content: center;
     align-items: center;
     border-radius: 50%;
-    z-index: 100;
+    z-index: 210;
     -webkit-app-region: no-drag;
     transition: background-color 0.2s, color 0.2s;
 }
@@ -94,7 +112,27 @@ button {
     justify-content: center;
     align-items: center;
     border-radius: 50%;
-    z-index: 100;
+    z-index: 210;
+    -webkit-app-region: no-drag;
+    transition: background-color 0.2s, color 0.2s, transform 0.1s;
+}
+
+.fullscreen-button {
+    position: absolute;
+    top: 15px;
+    right: 95px; /* 在迷你模式按钮左侧 */
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--text-color-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    z-index: 210;
     -webkit-app-region: no-drag;
     transition: background-color 0.2s, color 0.2s, transform 0.1s;
 }
@@ -104,10 +142,15 @@ button {
         background-color: rgba(0, 0, 0, 0.05);
         color: var(--text-color-dark);
     }
-    
+
     .mini-mode-button:hover {
         background-color: rgba(0, 123, 255, 0.1);
         color: var(--accent-color);
+    }
+
+    .fullscreen-button:hover {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: var(--success-color);
     }
 
     .tab-button:hover {
@@ -126,15 +169,19 @@ button {
     transform: scale(0.9);
 }
 
+.fullscreen-button:active {
+    transform: scale(0.9);
+}
+
 /* 所有可交互区域都不可拖拽 */
 .timer-tabs,
 .control-buttons,
 .close-window-button,
 .mini-mode-button,
+.fullscreen-button,
 .adjustment-button-top,
 .adjustment-button-bottom,
-.tab-button,
-.time-part {
+.tab-button {
     -webkit-app-region: no-drag !important;
 }
 
@@ -143,12 +190,22 @@ button {
     gap: 0;
 }
 
+/* 全屏模式下禁用窗口拖动 */
+#root.fullscreen-mode {
+    -webkit-app-region: no-drag;
+}
+
 #root.mini-mode .time-display {
     font-size: min(22vw, 60vh);
     margin-top: 10px;
 }
 
 /* Removed: body.timer-running #root { gap: 2vh; } */
+
+/* 禁用过渡辅助类，用于窗口调整大小时 */
+.no-transition * {
+    transition: none !important;
+}
 
 .timer-tabs {
     position: absolute;
@@ -163,6 +220,7 @@ button {
     opacity: 0;
     pointer-events: none;
     transform: translateY(-20px);
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tab-button {
@@ -309,12 +367,12 @@ body.timer-running .time-separator {
     gap: 6vmin;
     position: absolute;
     bottom: 5vh; /* 移到更靠下的位置 */
+    opacity: 1;
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body.timer-running .control-buttons {
-
     opacity: 1;
-
 }
 
 
@@ -396,3 +454,4 @@ body.timer-running .control-buttons {
     transform: scale(0.92); /* 按下时缩小一点点 */
 
 }
+

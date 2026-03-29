@@ -16,8 +16,9 @@ export const useStyles = makeStyles({
     },
     // 侧边栏样式：左侧导航栏
     sidebar: {
-        width: '280px',
-        ...shorthands.padding('8px', '4px', '12px', '4px'),
+        width: 'auto',
+        minWidth: 'fit-content',
+        ...shorthands.padding('8px', '0', '12px', '0'),
         display: 'flex',
         flexDirection: 'column',
         backgroundColor: 'var(--colorNeutralBackground2)',
@@ -156,6 +157,8 @@ export const useStyles = makeStyles({
         flexGrow: 1,
         ...shorthands.padding('32px', '24px'),
         overflowY: 'auto',
+        overflowX: 'hidden', // 防止水平溢出
+        minWidth: 0, // 允许收缩以适应容器
     },
     // 分组样式：设置页面的各个分组
     section: {
@@ -166,6 +169,8 @@ export const useStyles = makeStyles({
     },
     // 卡片样式：设置项的容器
     card: {
+        width: '100%',
+        boxSizing: 'border-box',
         ...shorthands.padding('16px', '24px'),
         backgroundColor: 'var(--colorNeutralBackground1)',
         ...shorthands.border('1px', 'solid', 'var(--colorNeutralStroke2)'),
@@ -174,6 +179,7 @@ export const useStyles = makeStyles({
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
+        gap: '20px',
         ':hover': {
             backgroundColor: 'var(--colorNeutralBackground1Hover)',
         }
@@ -208,6 +214,9 @@ export const useStyles = makeStyles({
         display: 'flex',
         flexDirection: 'column',
         gap: '4px',
+        minWidth: 0, // 允许收缩以适应容器
+        width: '100%',
+        boxSizing: 'border-box',
     },
     // 开关行样式
     switchRow: {
@@ -256,6 +265,10 @@ export const useStyles = makeStyles({
         gap: '8px',
         maxWidth: 'none',
         height: '100%',
+        overflow: 'hidden', // 防止内容溢出
+        width: '100%', // 确保占满可用宽度
+        minWidth: 0, // 允许收缩以适应容器
+        boxSizing: 'border-box',
     },
     // 组件布局样式：左右分栏布局
     componentLayout: {
@@ -266,6 +279,9 @@ export const useStyles = makeStyles({
         flexGrow: 1, // 自动填充剩余垂直空间
         minHeight: '0', // 允许内容收缩以支持滚动
         position: 'relative',
+        overflow: 'hidden', // 防止内容撑开布局
+        width: '100%', // 确保占满容器宽度
+        minWidth: 0, // 允许收缩以适应容器
     },
     // 左侧面板样式：预览面板
     leftPanel: {
@@ -277,6 +293,7 @@ export const useStyles = makeStyles({
         boxSizing: 'border-box',
         height: '100%',
         flexShrink: 0,
+        minWidth: 0, // 允许面板收缩以适应容器
     },
     // 右侧面板样式：属性面板
     rightPanel: {
@@ -288,6 +305,7 @@ export const useStyles = makeStyles({
         boxSizing: 'border-box',
         height: '100%',
         flexShrink: 0,
+        minWidth: 0, // 允许面板收缩以适应容器
     },
     // 调整器样式：左右面板之间的拖拽调整宽度的分隔条
     resizer: {
@@ -295,18 +313,19 @@ export const useStyles = makeStyles({
         backgroundColor: 'var(--colorNeutralStroke1)',
         cursor: 'col-resize',
         position: 'relative',
-        transitionProperty: 'background-color, width',
+        transitionProperty: 'background-color, transform',
         transitionDuration: '150ms',
         transitionTimingFunction: 'ease',
         flexShrink: 0,
+        flexGrow: 0,
         zIndex: 10,
         ':hover': {
             backgroundColor: 'var(--colorBrandStroke1)',
-            width: '6px',
+            transform: 'scaleX(1.5)',
         },
         ':active': {
             backgroundColor: 'var(--colorBrandBackground2Pressed)',
-            width: '6px',
+            transform: 'scaleX(1.5)',
         },
         '&::after': {
             content: '""',
@@ -356,12 +375,16 @@ export const useStyles = makeStyles({
         ...shorthands.overflow('hidden'),
         height: '100%',
         width: '100%',
+        minWidth: 0, // 允许面板收缩以适应容器
     },
     // 属性内容样式：属性面板的可滚动内容区域
     propertiesContent: {
         ...shorthands.padding('16px'),
         flexGrow: 1,
         ...shorthands.overflow('auto'),
+        minWidth: 0, // 允许内容区域收缩以适应容器
+        width: '100%', // 确保占满可用宽度
+        boxSizing: 'border-box',
     },
     // 属性分组样式
     propertySection: {
@@ -369,6 +392,9 @@ export const useStyles = makeStyles({
         flexDirection: 'column',
         gap: '16px',
         marginTop: '16px',
+        minWidth: 0, // 允许收缩以适应容器
+        width: '100%',
+        boxSizing: 'border-box',
     },
     // 预览占位符样式
     previewPlaceholder: {
@@ -494,6 +520,9 @@ export const useStyles = makeStyles({
         flexDirection: 'column',
         gap: '0px',
         marginTop: '0px',
+        minWidth: 0, // 允许收缩以适应容器
+        width: '100%',
+        boxSizing: 'border-box',
     },
     // 属性行样式
     propertyRow: {
@@ -569,5 +598,29 @@ export const useStyles = makeStyles({
         fontSize: '12px',
         color: 'var(--colorNeutralForeground3)',
         lineHeight: '1.4',
+    },
+    // 颜色选择器容器样式
+    colorPickerContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        marginTop: '4px',
+    },
+    // 颜色输入框样式
+    colorInput: {
+        width: '48px',
+        height: '32px',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        padding: '0',
+        backgroundColor: 'transparent',
+    },
+    // 颜色值显示样式
+    colorValue: {
+        fontSize: '14px',
+        fontWeight: '600',
+        color: 'var(--colorBrandForeground1)',
+        fontFamily: 'monospace',
     }
 });

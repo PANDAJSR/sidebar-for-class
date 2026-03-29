@@ -329,7 +329,7 @@ const ComponentSettings = ({ config, updateConfig, styles, loadIcon, preloadWidg
                 />
 
                 {/* 右侧属性面板 */}
-                <div className={styles.rightPanel} style={{ width: `calc(${100 - leftWidth}% - 12px)`, transition: isDragging ? 'none' : 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+                <div className={styles.rightPanel} style={{ width: `calc(${100 - leftWidth}% - 95px)`, transition: isDragging ? 'none' : 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}>
                     <PropertiesPanel
                         config={config}
                         updateConfig={updateConfig}

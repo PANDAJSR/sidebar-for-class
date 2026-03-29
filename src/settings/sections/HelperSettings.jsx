@@ -7,11 +7,8 @@
  */
 
 import React from 'react';
-import {
-    Card,
-    Label,
-    Switch
-} from "@fluentui/react-components";
+import 'mdui/components/card.js';
+import 'mdui/components/switch.js';
 
 const HelperSettings = ({ config, updateConfig, styles }) => {
     // 确保 helper_tools 对象存在
@@ -56,34 +53,40 @@ const HelperSettings = ({ config, updateConfig, styles }) => {
             </div>
 
             <div className={styles.groupTitle}>通用</div>
-            <Card className={styles.card}>
-                <div className={styles.switchRow}>
-                    <Label className={styles.label}>自动查杀同类软件窗口</Label>
-                    <Switch
-                        checked={helperTools.auto_kill_similar || false}
-                        onChange={(_, data) => handleToggle('auto_kill_similar', data.checked)}
-                    />
+            <mdui-card variant="filled" className={styles.card}>
+                <div className={styles.formGroup}>
+                    <div className={styles.switchRow}>
+                        <div className={styles.label}>自动查杀同类软件窗口</div>
+                        <mdui-switch
+                            checked={helperTools.auto_kill_similar || false}
+                            onChange={(e) => handleToggle('auto_kill_similar', e.target.checked)}
+                        />
+                    </div>
+                    <div className={styles.helpText}>启动时自动关闭其他可能产生冲突的同类软件窗口</div>
                 </div>
-                <div className={styles.helpText}>启动时自动关闭其他可能产生冲突的同类软件窗口</div>
 
-                <div className={styles.switchRow} style={{ marginTop: '16px' }}>
-                    <Label className={styles.label}>自动查杀同类软件计时器并打开本软件的计时器</Label>
-                    <Switch
-                        checked={helperTools.auto_kill_timer || false}
-                        onChange={(_, data) => handleToggle('auto_kill_timer', data.checked)}
-                    />
+                <div className={styles.formGroup}>
+                    <div className={styles.switchRow}>
+                        <div className={styles.label}>自动查杀同类软件计时器并打开本软件的计时器</div>
+                        <mdui-switch
+                            checked={helperTools.auto_kill_timer || false}
+                            onChange={(e) => handleToggle('auto_kill_timer', e.target.checked)}
+                        />
+                    </div>
+                    <div className={styles.helpText}>检测并关闭希沃计时器等同类软件，并自动启动本软件计时器</div>
                 </div>
-                <div className={styles.helpText}>检测并关闭希沃计时器等同类软件，并自动启动本软件计时器</div>
 
-                <div className={styles.switchRow} style={{ marginTop: '16px' }}>
-                    <Label className={styles.label}>ICC-CE兼容</Label>
-                    <Switch
-                        checked={helperTools.icc_compatibility || false}
-                        onChange={(_, data) => handleToggle('icc_compatibility', data.checked)}
-                    />
+                <div className={styles.formGroup}>
+                    <div className={styles.switchRow}>
+                        <div className={styles.label}>ICC-CE兼容</div>
+                        <mdui-switch
+                            checked={helperTools.icc_compatibility || false}
+                            onChange={(e) => handleToggle('icc_compatibility', e.target.checked)}
+                        />
+                    </div>
+                    <div className={styles.helpText}>启动后隐藏ICC-CE侧边栏来避免界面上的冲突</div>
                 </div>
-                <div className={styles.helpText}>启动后隐藏ICC-CE侧边栏来避免界面上的冲突</div>
-            </Card>
+            </mdui-card>
         </div>
     );
 };

@@ -78,11 +78,7 @@ const useSidebarAnimation = (config, scale, startH, panelWidth, panelHeight, sid
             sidebarRef.current.style.transform = `scale(var(--sidebar-scale)) translateY(${layout.offsetY / scale}px)`;
         }
 
-        const gray = Math.floor(156 + (255 - 156) * progress);
-        const targetOpacity = config?.transforms?.panel?.opacity || 0.9;
-        const startOpacity = 0.6;
-        const currentOpacity = startOpacity + (targetOpacity - startOpacity) * progress;
-        sidebarRef.current.style.background = `rgba(${gray}, ${gray}, ${gray}, ${currentOpacity})`;
+        // 背景色由 CSS 变量控制，不在 JS 中设置
     }, [config, scale, startH, panelWidth, panelHeight, sidebarRef, BASE_START_W, TARGET_W, TARGET_H, calculateLayout]);
 
     const stopAnimation = () => {
