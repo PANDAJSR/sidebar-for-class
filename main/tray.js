@@ -13,20 +13,14 @@ let isWindowVisible = true;
  * @returns {nativeImage} 托盘图标
  */
 function createTrayIcon() {
-  const canvas = require('canvas');
-  const { createCanvas } = canvas;
-  
-  const size = 16;
-  const canvasObj = createCanvas(size, size);
-  const ctx = canvasObj.getContext('2d');
-  
-  ctx.fillStyle = '#0078d4';
-  ctx.fillRect(0, 0, size, size);
-  
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(2, 4, 12, 8);
-  
-  return nativeImage.createFromDataURL(canvasObj.toDataURL());
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+      <rect width="16" height="16" fill="#0078d4"/>
+      <rect x="2" y="4" width="12" height="8" fill="#ffffff"/>
+    </svg>
+  `;
+  const dataUrl = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+  return nativeImage.createFromDataURL(dataUrl);
 }
 
 /**

@@ -6,7 +6,6 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const screenshot = require('screenshot-desktop');
-const sharp = require('sharp');
 
 /**
  * 执行截图并保存到桌面
@@ -14,6 +13,8 @@ const sharp = require('sharp');
  */
 async function takeScreenshot() {
   try {
+    const sharp = require('sharp');
+
     // 获取用户桌面路径
     const desktopPath = path.join(os.homedir(), 'Desktop');
 

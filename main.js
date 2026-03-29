@@ -60,8 +60,10 @@ app.whenReady().then(() => {
   // 创建主窗口
   createWindow();
 
-  // 创建系统托盘
-  createTray();
+  // macOS 26 + Electron 39 在部分机器上创建托盘会触发原生崩溃，默认跳过
+  if (process.platform !== 'darwin' || process.env.ENABLE_TRAY_ON_MAC === '1') {
+    createTray();
+  }
 
   // 启动自动查杀服务
   startKiller();
@@ -72,8 +74,10 @@ app.whenReady().then(() => {
   // 注册显示器事件监听器
   registerDisplayEventListeners();
 
-  // 启动守护进程
-  startGuardian();
+  // 守护进程仅在 Windows 上启用（macOS 下会引入额外 Electron 子进程，稳定性较差）
+  if (process.platform === 'win32') {
+    startGuardian();
+  }
 
   // 运行启动脚本
   runStartupScripts();

@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "vite",
-    "electron": "wait-on http://localhost:3000 && electron .",
+    "electron": "wait-on http://localhost:3000 && node scripts/run-electron.cjs",
     "dev": "concurrently \"npm run start\" \"npm run electron\"",
     "build": "vite build",
     "build:win": "npm run build && electron-builder --win",
@@ -54,7 +54,7 @@
     "@fluentui/react-icons": "^2.0.316",
     "@vitejs/plugin-react": "^5.1.2",
     "concurrently": "^9.2.1",
-    "electron": "^39.2.7",
+    "electron": "^39.8.5",
     "electron-builder": "^26.4.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
@@ -71,7 +71,10 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "electron"
+      "electron",
+      "canvas",
+      "sharp",
+      "esbuild"
     ]
   }
 }

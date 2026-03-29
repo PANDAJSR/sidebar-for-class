@@ -3,6 +3,7 @@
  * 负责应用和URL的启动逻辑
  */
 const { spawn } = require('child_process');
+const { execSync } = require('child_process');
 const { shell } = require('electron');
 const path = require('path');
 const { getExePathFromProtocol } = require('../main-utils');
@@ -34,6 +35,20 @@ function spawnWithLogging(cmd, args, label) {
   child.unref();
 }
 
+function resolveNodeCommand() {
+  return process.platform === 'win32' ? 'node.exe' : process.execPath;
+}
+
+function resolvePowerShellCommand() {
+  if (process.platform === 'win32') return 'powershell.exe';
+  try {
+    const output = execSync('command -v pwsh', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    return output || null;
+  } catch (e) {
+    return null;
+  }
+}
+
 /**
  * 启动应用或URL
  * @param {string} target - 目标路径或URL
@@ -60,10 +75,18 @@ async function launchApp(target, args = []) {
 
   // 针对脚本进行特殊处理
   if (resolvedTarget.toLowerCase().endsWith('.ps1')) {
-    spawnWithLogging('powershell.exe', ['-ExecutionPolicy', 'Bypass', '-File', resolvedTarget, ...args], label);
+    const powerShellCommand = resolvePowerShellCommand();
+    if (!powerShellCommand) {
+      console.warn(`[Launcher] PowerShell is not available on ${process.platform}, skip: ${resolvedTarget}`);
+      return;
+    }
+    const psArgs = process.platform === 'win32'
+      ? ['-ExecutionPolicy', 'Bypass', '-File', resolvedTarget, ...args]
+      : ['-File', resolvedTarget, ...args];
+    spawnWithLogging(powerShellCommand, psArgs, label);
     return;
   } else if (resolvedTarget.toLowerCase().endsWith('.js')) {
-    spawnWithLogging('node.exe', [resolvedTarget, ...args], label);
+    spawnWithLogging(resolveNodeCommand(), [resolvedTarget, ...args], label);
     return;
   }
 
@@ -98,9 +121,13 @@ async function getFileIcon(filePath, app) {
     } else if (!path.isAbsolute(filePath)) {
       // 如果是相对路径，尝试查找
       try {
-        const { execSync } = require('child_process');
-        const output = execSync(`where ${filePath}`, { encoding: 'utf8' });
-        resolvedPath = output.split('\r\n')[0];
+        if (process.platform === 'win32') {
+          const output = execSync(`where ${filePath}`, { encoding: 'utf8' });
+          resolvedPath = output.split('\r\n')[0];
+        } else {
+          const output = execSync(`command -v ${filePath}`, { encoding: 'utf8' });
+          resolvedPath = output.split('\n')[0];
+        }
       } catch (e) {
         // 回退到路径检查
       }

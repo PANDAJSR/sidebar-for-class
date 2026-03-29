@@ -4,6 +4,7 @@
  */
 const path = require('path');
 const { spawn, exec } = require('child_process');
+const { existsSync } = require('fs');
 
 /**
  * 执行单个自动化任务
@@ -42,10 +43,18 @@ async function executeTask(item, dataDir) {
       const quotedScriptPath = `"${scriptPath}"`;
 
       if (scriptPath.toLowerCase().endsWith('.ps1')) {
-        cmd = 'powershell.exe';
-        args = ['-ExecutionPolicy', 'Bypass', '-File', scriptPath, ...args];
+        if (process.platform === 'win32') {
+          cmd = 'powershell.exe';
+          args = ['-ExecutionPolicy', 'Bypass', '-File', scriptPath, ...args];
+        } else if (existsSync('/usr/local/bin/pwsh') || existsSync('/opt/homebrew/bin/pwsh')) {
+          cmd = existsSync('/opt/homebrew/bin/pwsh') ? '/opt/homebrew/bin/pwsh' : '/usr/local/bin/pwsh';
+          args = ['-File', scriptPath, ...args];
+        } else {
+          console.warn(`[Automation] Skip PowerShell script on ${process.platform}: ${scriptPath}`);
+          return;
+        }
       } else if (scriptPath.toLowerCase().endsWith('.js')) {
-        cmd = 'node.exe';
+        cmd = process.platform === 'win32' ? 'node.exe' : process.execPath;
         args = [scriptPath, ...args];
       } else {
         // 对于 .bat 或其他可执行文件，直接使用路径
