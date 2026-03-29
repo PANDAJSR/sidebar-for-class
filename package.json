@@ -76,5 +76,10 @@
     "loudness": "^0.4.2",
     "screenshot-desktop": "^1.15.3",
     "sharp": "^0.34.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron"
+    ]
   }
 }
