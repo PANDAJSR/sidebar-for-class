@@ -18,3 +18,4 @@
 - 每次修改代码内容后，必须立即提交并推送到远程仓库。
 - Commit message 必须使用中文，并遵循 Conventional Commits 规范。
 - 推荐格式：`<type>(<scope>): <中文描述>`，例如：`feat(editor): 新增代码折叠功能`。
+- 当用户输入 `cp` 时，必须立即使用中文 Conventional Commits 规范完成提交，并推送到远程仓库。
