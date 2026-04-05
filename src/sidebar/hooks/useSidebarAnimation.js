@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 
-const EDGE_TAB_VISIBLE_WIDTH = 34;
+const EDGE_TAB_VISIBLE_WIDTH = 14;
+const EDGE_TAB_COLLAPSED_WIDTH = 64;
 
 const useSidebarAnimation = (config, scale, startH, panelWidth, panelHeight, sidebarRef, wrapperRef, animationIdRef, draggingState, constants) => {
     const [isExpanded, setIsExpanded] = useState(false);
@@ -69,7 +70,7 @@ const useSidebarAnimation = (config, scale, startH, panelWidth, panelHeight, sid
         progressRef.current = clampedProgress;
 
         const currentW = isEdgeTabStyle
-            ? panelWidth
+            ? EDGE_TAB_COLLAPSED_WIDTH + (panelWidth - EDGE_TAB_COLLAPSED_WIDTH) * clampedProgress
             : BASE_START_W + (panelWidth - BASE_START_W) * clampedProgress;
         const currentH = startH + (panelHeight - startH) * clampedProgress;
         const currentRadius = isEdgeTabStyle

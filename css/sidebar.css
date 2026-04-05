@@ -107,7 +107,7 @@
 
 /* 点击展开 - 贴边把手样式 */
 #sidebar-wrapper.edge-tab-mode:not(.expanded) {
-    width: 44px;
+    width: 28px;
 }
 
 #sidebar-wrapper.edge-tab-mode:not(.expanded) #sidebar.edge-tab-style {
@@ -123,12 +123,12 @@
 #sidebar.edge-tab-style::after {
     content: "";
     position: absolute;
-    right: 10px;
+    right: 4px;
     top: 50%;
-    width: 10px;
-    height: 10px;
-    border-top: 3px solid rgba(255, 255, 255, 0.95);
-    border-right: 3px solid rgba(255, 255, 255, 0.95);
+    width: 8px;
+    height: 8px;
+    border-top: 2.5px solid rgba(255, 255, 255, 0.95);
+    border-right: 2.5px solid rgba(255, 255, 255, 0.95);
     transform: translateY(-50%) rotate(45deg);
     opacity: 0;
     transition: opacity 0.2s ease;
