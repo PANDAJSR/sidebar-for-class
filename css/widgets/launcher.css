@@ -44,6 +44,17 @@
     box-sizing: border-box;
 }
 
+button.launcher-item {
+    transform: scale(1);
+    transform-origin: center;
+    transition: transform 110ms ease-out;
+    touch-action: manipulation;
+}
+
+button.launcher-item:active {
+    transform: scale(0.96);
+}
+
 .launcher-item:focus-visible {
     outline: 2px solid rgba(59, 130, 246, 0.5);
     outline-offset: 1px;
