@@ -9,6 +9,8 @@
 import React from 'react';
 
 const ICCCEControl = ({ functions = [], isExpanded, collapse, isPreview = false }) => {
+    const columns = Math.min(Math.max(functions.length, 1), 5);
+
     /**
      * 处理功能按钮点击事件
      * @param {string} func - 功能名称
@@ -74,7 +76,7 @@ const ICCCEControl = ({ functions = [], isExpanded, collapse, isPreview = false 
 
     return (
         <div className={`toolbar-widget iccce-control-widget ${functions.length === 1 ? 'single-tool' : ''}`}>
-            <div className="toolbar-buttons">
+            <div className="toolbar-buttons" style={{ '--toolbar-columns': columns }}>
                 <div className="widget-header-title-inner">ICC-CE</div>
                 {functions.map((func, index) => (
                     <button

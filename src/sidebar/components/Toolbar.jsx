@@ -8,6 +8,8 @@
 import React from 'react';
 
 const Toolbar = ({ tools = [], isExpanded, collapse, isPreview = false, onScreenshot }) => {
+    const columns = Math.min(Math.max(tools.length, 1), 5);
+
     /**
      * 处理工具按钮点击事件
      * @param {string} tool - 工具名称
@@ -85,7 +87,7 @@ const Toolbar = ({ tools = [], isExpanded, collapse, isPreview = false, onScreen
 
     return (
         <div className={`toolbar-widget ${tools.length === 1 ? 'single-tool' : ''}`}>
-            <div className="toolbar-buttons">
+            <div className="toolbar-buttons" style={{ '--toolbar-columns': columns }}>
                 {tools.map((tool, index) => (
                     <button
                         key={index}

@@ -6,8 +6,8 @@
 /* 取消整体包裹视觉，仅保留按钮网格布局 */
 .toolbar-buttons {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(var(--toolbar-columns, 5), minmax(0, 1fr));
+    gap: 6px;
     padding: 0;
     background: transparent;
     border: none;
