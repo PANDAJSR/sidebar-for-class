@@ -26,66 +26,27 @@
     gap: 8px;
 }
 
-/* 启动器基础按钮风格 */
+/* 启动器按钮：朴素静态风格 */
 .launcher-item {
-    position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
     width: 100%;
     min-height: 44px;
-    border: 1px solid rgba(255, 255, 255, 0.75);
-    border-radius: 14px;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 12px;
     padding: 10px 12px;
     margin: 0;
-    background:
-        linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(245, 248, 255, 0.9)),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0.12));
-    box-shadow:
-        0 12px 24px rgba(16, 24, 40, 0.12),
-        inset 0 1px 0 rgba(255, 255, 255, 0.92);
-    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.92);
+    color: #0f172a;
     text-align: left;
     cursor: pointer;
-    overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.launcher-item::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(115deg, rgba(88, 101, 242, 0.2), rgba(59, 130, 246, 0));
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    pointer-events: none;
-}
-
-.launcher-item:hover {
-    transform: translateY(-1px);
-    border-color: rgba(125, 157, 255, 0.9);
-    box-shadow:
-        0 14px 28px rgba(37, 99, 235, 0.18),
-        inset 0 1px 0 rgba(255, 255, 255, 0.95);
-}
-
-.launcher-item:hover::before {
-    opacity: 1;
-}
-
-.launcher-item:active {
-    transform: translateY(0);
-    box-shadow:
-        0 8px 16px rgba(37, 99, 235, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    box-sizing: border-box;
 }
 
 .launcher-item:focus-visible {
-    outline: none;
-    box-shadow:
-        0 0 0 2px rgba(255, 255, 255, 0.95),
-        0 0 0 4px rgba(59, 130, 246, 0.55),
-        0 14px 28px rgba(37, 99, 235, 0.22);
+    outline: 2px solid rgba(59, 130, 246, 0.5);
+    outline-offset: 1px;
 }
 
 /* 垂直布局 */
@@ -123,23 +84,20 @@
     justify-content: center;
     overflow: hidden;
     flex-shrink: 0;
-    position: relative;
-    z-index: 1;
 }
 
 .launcher-icon img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.2));
 }
 
 .launcher-icon-placeholder {
     width: 24px;
     height: 24px;
     border-radius: 8px;
-    background: linear-gradient(135deg, rgba(148, 163, 184, 0.32), rgba(148, 163, 184, 0.16));
-    border: 1px solid rgba(148, 163, 184, 0.45);
+    background: #e2e8f0;
+    border: 1px solid #cbd5e1;
 }
 
 .layout-grid .launcher-icon,
@@ -156,8 +114,6 @@
 
 /* 文本风格 */
 .launcher-name {
-    position: relative;
-    z-index: 1;
     font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.1px;
@@ -184,7 +140,7 @@
 
 .compact-files .launcher-item {
     min-height: 36px;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 8px 10px;
 }
 

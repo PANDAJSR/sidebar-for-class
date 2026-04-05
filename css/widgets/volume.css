@@ -1,22 +1,9 @@
-﻿/* 音量组件样式 */
+﻿/* 音量组件样式：朴素静态风格 */
 .volume-slider-container {
     padding: 12px 14px;
-    border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.72);
-    background:
-        linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(242, 246, 255, 0.85));
-    box-shadow:
-        0 12px 24px rgba(15, 23, 42, 0.14),
-        inset 0 1px 0 rgba(255, 255, 255, 0.95);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.volume-slider-container:hover {
-    transform: translateY(-1px);
-    border-color: rgba(125, 157, 255, 0.85);
-    box-shadow:
-        0 14px 30px rgba(37, 99, 235, 0.18),
-        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    background: rgba(255, 255, 255, 0.92);
 }
 
 .volume-slider-row {
@@ -28,7 +15,7 @@
 .volume-icon {
     display: flex;
     align-items: center;
-    color: #1e3a8a;
+    color: #334155;
     flex-shrink: 0;
 }
 
@@ -55,8 +42,7 @@
 .volume-slider::-webkit-slider-runnable-track {
     height: 6px;
     border-radius: 999px;
-    background: linear-gradient(90deg, rgba(37, 99, 235, 0.9), rgba(14, 165, 233, 0.88));
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+    background: #d1d5db;
 }
 
 .volume-slider::-webkit-slider-thumb {
@@ -65,16 +51,14 @@
     height: 16px;
     border-radius: 50%;
     border: 2px solid #ffffff;
-    background: #1d4ed8;
-    box-shadow: 0 2px 8px rgba(30, 64, 175, 0.42);
+    background: #3b82f6;
     margin-top: -5px;
 }
 
 .volume-slider::-moz-range-track {
     height: 6px;
     border-radius: 999px;
-    background: linear-gradient(90deg, rgba(37, 99, 235, 0.9), rgba(14, 165, 233, 0.88));
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+    background: #d1d5db;
 }
 
 .volume-slider::-moz-range-thumb {
@@ -82,8 +66,7 @@
     height: 16px;
     border-radius: 50%;
     border: 2px solid #ffffff;
-    background: #1d4ed8;
-    box-shadow: 0 2px 8px rgba(30, 64, 175, 0.42);
+    background: #3b82f6;
 }
 
 .volume-value {
