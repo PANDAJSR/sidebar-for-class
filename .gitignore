@@ -49,3 +49,6 @@ release/
 
 // log文件
 *.log
+
+
+data/config.json

@@ -32,6 +32,11 @@
                     "name": "记事本",
                     "target": "notepad.exe",
                     "args": []
+                },
+                {
+                    "name": "希沃白板",
+                    "target": "\"C:\\Program Files (x86)\\Seewo\\EasiNote5\\swenlauncher\\swenlauncher.exe\"",
+                    "args": []
                 }
             ],
             "layout": "grid_no_text",
