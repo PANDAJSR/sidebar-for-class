@@ -21,5 +21,6 @@
     --primary-color: #3b82f6;
     --text-main: #1f2937;
     --text-muted: #4b5563;
+    --text-muted-rgb: 75, 85, 99;
     --slider-bg: var(--bg-transparent-dark);
 }

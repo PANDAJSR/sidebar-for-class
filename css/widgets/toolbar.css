@@ -20,11 +20,12 @@
     flex-wrap: wrap;
     background: var(--bg-transparent);
     opacity: 0.95;
-    border-radius: var(--widget-border-radius);
-    border: var(--widget-border);
+    border-radius: 26px;
+    border: none;
     overflow: hidden;
     position: relative;
-    gap: 0;
+    gap: 8px;
+    padding: 0;
     transition: all 0.2s ease;
     box-shadow: var(--widget-shadow);
     backdrop-filter: blur(10px);
@@ -40,7 +41,8 @@
     /* 将 elevated 按钮的背景色设为白色 */
     --mdui-color-surface-container-low: 255, 255, 255 !important;
     --mdui-color-surface-container: 255, 255, 255 !important;
-    flex: 1 1 20%;
+
+    flex: 1 1 calc(20% - 7px);
     min-width: 0;
     box-sizing: border-box;
     position: relative;
@@ -51,6 +53,7 @@
 .toolbar-widget.single-tool .toolbar-button {
     flex: 1 1 100%;
     max-width: 100%;
+    margin: 0;
 }
 
 .toolbar-button::part(button) {
@@ -87,9 +90,7 @@
     color: white !important;
 }
 
-.toolbar-button:hover .toolbar-icon i {
-    color: white !important;
-}
+
 
 /* 分割线逻辑 - 考虑标题占据第一个位置的情况 */
 .iccce-control-widget .toolbar-button:not(:nth-child(5n+2))::before {
