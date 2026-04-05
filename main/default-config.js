@@ -10,6 +10,7 @@ const DEFAULT_CONFIG = {
         "animation_speed": 1,
         "size": 130,
         "auto_hide": true,
+        "expand_mode": "drag",
         "panel": {
             "opacity": 0.9,
             "height": 450,

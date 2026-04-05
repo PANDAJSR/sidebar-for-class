@@ -137,6 +137,7 @@ function previewConfig(newConfig, dependencies = {}) {
             posy: newConfig.transforms?.posy ?? baseConfig.transforms?.posy ?? 0,
             size: newConfig.transforms?.size ?? baseConfig.transforms?.size ?? 100,
             auto_hide: newConfig.transforms?.auto_hide ?? baseConfig.transforms?.auto_hide ?? false,
+            expand_mode: newConfig.transforms?.expand_mode ?? baseConfig.transforms?.expand_mode ?? 'drag',
             animation_speed: newConfig.transforms?.animation_speed ?? baseConfig.transforms?.animation_speed ?? 1,
             theme_color: newConfig.transforms?.theme_color ?? baseConfig.transforms?.theme_color ?? '#5865F2',
             panel: {

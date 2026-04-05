@@ -6,7 +6,7 @@
  * @param {Object} styles - 样式对象
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import 'mdui/components/card.js';
 import 'mdui/components/slider.js';
 import 'mdui/components/switch.js';
@@ -15,15 +15,16 @@ import 'mdui/components/dropdown.js';
 import 'mdui/components/menu.js';
 import 'mdui/components/menu-item.js';
 import 'mdui/components/button.js';
-import { useState, useEffect } from 'react';
 
 const WindowSettings = ({ config, handleTransformChange, styles }) => {
-    // 显示器列表
     const [displays, setDisplays] = useState([]);
+    const expandMode = config.transforms?.expand_mode || 'drag';
+    const expandModeLabels = {
+        click: '点击展开',
+        drag: '拖动展开',
+        both: '点击和拖动'
+    };
 
-    /**
-     * 加载显示器列表
-     */
     useEffect(() => {
         const fetchDisplays = async () => {
             const displayList = await window.electronAPI.getDisplays();
@@ -31,7 +32,6 @@ const WindowSettings = ({ config, handleTransformChange, styles }) => {
         };
         fetchDisplays();
 
-        // 监听显示器插拔/变化
         const removeListener = window.electronAPI.onDisplaysUpdated((updatedDisplays) => {
             setDisplays(updatedDisplays);
         });
@@ -54,9 +54,9 @@ const WindowSettings = ({ config, handleTransformChange, styles }) => {
                     <div className={styles.label}>选择显示器</div>
                     <mdui-dropdown>
                         <mdui-button slot="trigger" variant="tonal" style={{ width: '120px' }}>
-                            {displays[config.transforms.display] ?
-                                (displays[config.transforms.display].label || `显示器 ${config.transforms.display} (${displays[config.transforms.display].bounds.width}x${displays[config.transforms.display].bounds.height})`) :
-                                `显示器 ${config.transforms.display}`}
+                            {displays[config.transforms.display]
+                                ? (displays[config.transforms.display].label || `显示器 ${config.transforms.display} (${displays[config.transforms.display].bounds.width}x${displays[config.transforms.display].bounds.height})`)
+                                : `显示器 ${config.transforms.display}`}
                         </mdui-button>
                         <mdui-menu>
                             {displays.map((display, index) => (
@@ -99,7 +99,7 @@ const WindowSettings = ({ config, handleTransformChange, styles }) => {
                         end-icon="px"
                         style={{ width: '200px' }}
                     />
-                    <div className={styles.helpText}>收起状态下的侧边栏的高度</div>
+                    <div className={styles.helpText}>收起状态下侧边栏的高度</div>
                 </div>
 
                 <div className={styles.formGroup}>
@@ -111,6 +111,27 @@ const WindowSettings = ({ config, handleTransformChange, styles }) => {
                         />
                     </div>
                     <div className={styles.helpText}>失去焦点时自动收起侧边栏</div>
+                </div>
+
+                <div className={styles.formGroup}>
+                    <div className={styles.label}>展开方式</div>
+                    <mdui-dropdown>
+                        <mdui-button slot="trigger" variant="tonal" style={{ width: '180px' }}>
+                            {expandModeLabels[expandMode] || expandModeLabels.drag}
+                        </mdui-button>
+                        <mdui-menu>
+                            <mdui-menu-item value="click" onClick={() => handleTransformChange('expand_mode', 'click')}>
+                                {expandModeLabels.click}
+                            </mdui-menu-item>
+                            <mdui-menu-item value="drag" onClick={() => handleTransformChange('expand_mode', 'drag')}>
+                                {expandModeLabels.drag}
+                            </mdui-menu-item>
+                            <mdui-menu-item value="both" onClick={() => handleTransformChange('expand_mode', 'both')}>
+                                {expandModeLabels.both}
+                            </mdui-menu-item>
+                        </mdui-menu>
+                    </mdui-dropdown>
+                    <div className={styles.helpText}>设置收起状态下通过点击、拖动或两者都可来展开侧边栏</div>
                 </div>
             </mdui-card>
         </div>

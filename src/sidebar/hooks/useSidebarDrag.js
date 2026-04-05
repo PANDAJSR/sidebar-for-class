@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-const useSidebarDrag = (isExpanded, updateSidebarStyles, expand, collapse, stopAnimation, setIgnoreMouse, sidebarRef, wrapperRef, animationIdRef, draggingState, constants, panelWidth, setWindowToLarge, screenshotPath) => {
+const useSidebarDrag = (isExpanded, updateSidebarStyles, expand, collapse, stopAnimation, setIgnoreMouse, sidebarRef, wrapperRef, animationIdRef, draggingState, constants, panelWidth, setWindowToLarge, screenshotPath, allowDragExpand = true) => {
     const { BASE_START_W, VELOCITY_THRESHOLD } = constants;
 
     const activateDragVisuals = () => {
@@ -12,6 +12,7 @@ const useSidebarDrag = (isExpanded, updateSidebarStyles, expand, collapse, stopA
     const handleStart = (currentX, target) => {
         // 如果正在显示截图预览遮罩，禁用侧边栏拖拽收起功能
         if (screenshotPath) return;
+        if (!isExpanded && !allowDragExpand) return;
 
         const isInteractive = (el) => {
             return el.tagName === 'INPUT' ||

@@ -18,6 +18,9 @@ const Sidebar = () => {
     // 1. 基础 Refs 和配置
     const { sidebarRef, wrapperRef, animationIdRef, draggingState, constants } = useSidebarRefs();
     const { config, scale, startH, panelWidth, panelHeight } = useSidebarConfig();
+    const expandMode = config?.transforms?.expand_mode || 'drag';
+    const allowDragExpand = expandMode === 'drag' || expandMode === 'both';
+    const allowClickExpand = expandMode === 'click' || expandMode === 'both';
     
     // 2. 所有的 useState 定义
     const [screenshotPath, setScreenshotPath] = useState(null);
@@ -39,7 +42,7 @@ const Sidebar = () => {
 
     // 4. 钩子函数调用 (获取控制状态)
     const { isExpanded, expand, collapse, updateSidebarStyles, stopAnimation, setIgnoreMouse, setWindowToLarge } = useSidebarAnimation(config, scale, startH, panelWidth, panelHeight, sidebarRef, wrapperRef, animationIdRef, draggingState, constants);
-    const { handleStart, handleMove, handleEnd } = useSidebarDrag(isExpanded, updateSidebarStyles, expand, collapse, stopAnimation, setIgnoreMouse, sidebarRef, wrapperRef, animationIdRef, draggingState, constants, panelWidth, setWindowToLarge, screenshotPath);
+    const { handleStart, handleMove, handleEnd } = useSidebarDrag(isExpanded, updateSidebarStyles, expand, collapse, stopAnimation, setIgnoreMouse, sidebarRef, wrapperRef, animationIdRef, draggingState, constants, panelWidth, setWindowToLarge, screenshotPath, allowDragExpand);
 
     // 5. 其他辅助钩子
     useSidebarMouseIgnore(isExpanded, sidebarRef, wrapperRef, draggingState, animationIdRef, setIgnoreMouse);
@@ -96,6 +99,11 @@ const Sidebar = () => {
         }
     };
 
+    const handleWrapperClick = () => {
+        if (screenshotPath || isExpanded || !allowClickExpand) return;
+        expand();
+    };
+
     // 8. 渲染
     return (
         <div id="sidebar-wrapper"
@@ -103,6 +111,7 @@ const Sidebar = () => {
             className={isExpanded ? 'expanded' : ''}
             onMouseDown={(e) => handleStart(e.screenX, e.target)}
             onTouchStart={(e) => e.touches.length > 0 && handleStart(e.touches[0].screenX, e.target)}
+            onClick={handleWrapperClick}
         >
             <div id="sidebar" ref={sidebarRef}>
                 <div id="content">
