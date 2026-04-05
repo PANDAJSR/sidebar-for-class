@@ -15,14 +15,14 @@ const WindowSettings = ({ config, handleTransformChange, styles }) => {
     const clickExpandStyle = config.transforms?.click_expand_style || 'bar';
 
     const expandModeLabels = {
-        click: 'Click Expand',
-        drag: 'Drag Expand',
-        both: 'Click + Drag'
+        click: '点击展开',
+        drag: '拖动展开',
+        both: '点击和拖动'
     };
 
     const clickStyleLabels = {
-        bar: 'Default Bar',
-        edge_tab: 'Edge Handle'
+        bar: '默认细条',
+        edge_tab: '贴边把手'
     };
 
     useEffect(() => {
@@ -44,19 +44,19 @@ const WindowSettings = ({ config, handleTransformChange, styles }) => {
     return (
         <div className={styles.section}>
             <div className={styles.sectionHeader}>
-                <div className={styles.title}>Window Settings</div>
-                <div className={styles.description}>Configure display, position and size for the sidebar window.</div>
+                <div className={styles.title}>窗口设置</div>
+                <div className={styles.description}>配置侧边栏窗口的显示器、位置和尺寸。</div>
             </div>
 
-            <div className={styles.groupTitle}>Display</div>
+            <div className={styles.groupTitle}>显示器</div>
             <mdui-card variant="filled" className={styles.card}>
                 <div className={styles.formGroup}>
-                    <div className={styles.label}>Choose Display</div>
+                    <div className={styles.label}>选择显示器</div>
                     <mdui-dropdown>
-                        <mdui-button slot="trigger" variant="tonal" style={{ width: '170px' }}>
+                        <mdui-button slot="trigger" variant="tonal" style={{ width: '150px' }}>
                             {displays[config.transforms.display]
-                                ? (displays[config.transforms.display].label || `Display ${config.transforms.display} (${displays[config.transforms.display].bounds.width}x${displays[config.transforms.display].bounds.height})`)
-                                : `Display ${config.transforms.display}`}
+                                ? (displays[config.transforms.display].label || `显示器 ${config.transforms.display} (${displays[config.transforms.display].bounds.width}x${displays[config.transforms.display].bounds.height})`)
+                                : `显示器 ${config.transforms.display}`}
                         </mdui-button>
                         <mdui-menu>
                             {displays.map((display, index) => (
@@ -65,19 +65,19 @@ const WindowSettings = ({ config, handleTransformChange, styles }) => {
                                     value={index.toString()}
                                     onClick={() => handleTransformChange('display', index)}
                                 >
-                                    {display.label || `Display ${index} (${display.bounds.width}x${display.bounds.height})`}
+                                    {display.label || `显示器 ${index} (${display.bounds.width}x${display.bounds.height})`}
                                 </mdui-menu-item>
                             ))}
                         </mdui-menu>
                     </mdui-dropdown>
-                    <div className={styles.helpText}>Select which monitor the sidebar should stay on.</div>
+                    <div className={styles.helpText}>选择侧边栏所在的屏幕</div>
                 </div>
             </mdui-card>
 
-            <div className={styles.groupTitle}>Position and Size</div>
+            <div className={styles.groupTitle}>位置与尺寸</div>
             <mdui-card variant="filled" className={styles.card}>
                 <div className={styles.formGroup}>
-                    <div className={styles.label}>Vertical Position</div>
+                    <div className={styles.label}>垂直位置</div>
                     <div className={styles.rangeContainer}>
                         <mdui-slider
                             min={0}
@@ -87,11 +87,11 @@ const WindowSettings = ({ config, handleTransformChange, styles }) => {
                         />
                         <span className={styles.rangeValue}>{config.transforms.posy}px</span>
                     </div>
-                    <div className={styles.helpText}>Vertical center position of sidebar.</div>
+                    <div className={styles.helpText}>侧边栏中心的垂直坐标</div>
                 </div>
 
                 <div className={styles.formGroup}>
-                    <div className={styles.label}>Collapsed Height</div>
+                    <div className={styles.label}>初始高度</div>
                     <mdui-text-field
                         type="number"
                         value={config.transforms.height}
@@ -99,22 +99,22 @@ const WindowSettings = ({ config, handleTransformChange, styles }) => {
                         end-icon="px"
                         style={{ width: '200px' }}
                     />
-                    <div className={styles.helpText}>Height when sidebar is collapsed.</div>
+                    <div className={styles.helpText}>收起状态下侧边栏的高度</div>
                 </div>
 
                 <div className={styles.formGroup}>
                     <div className={styles.switchRow}>
-                        <div className={styles.label}>Auto Collapse</div>
+                        <div className={styles.label}>自动收起</div>
                         <mdui-switch
                             checked={config.transforms.auto_hide}
                             onChange={(e) => handleTransformChange('auto_hide', e.target.checked)}
                         />
                     </div>
-                    <div className={styles.helpText}>Collapse automatically after losing focus.</div>
+                    <div className={styles.helpText}>失去焦点时自动收起侧边栏</div>
                 </div>
 
                 <div className={styles.formGroup}>
-                    <div className={styles.label}>Expand Mode</div>
+                    <div className={styles.label}>展开方式</div>
                     <mdui-dropdown>
                         <mdui-button slot="trigger" variant="tonal" style={{ width: '180px' }}>
                             {expandModeLabels[expandMode] || expandModeLabels.drag}
@@ -131,12 +131,12 @@ const WindowSettings = ({ config, handleTransformChange, styles }) => {
                             </mdui-menu-item>
                         </mdui-menu>
                     </mdui-dropdown>
-                    <div className={styles.helpText}>Choose how the sidebar opens while collapsed.</div>
+                    <div className={styles.helpText}>设置收起状态下通过点击、拖动或两者都可来展开侧边栏</div>
                 </div>
 
                 {expandMode === 'click' && (
                     <div className={styles.formGroup}>
-                        <div className={styles.label}>Click Expand Style</div>
+                        <div className={styles.label}>点击展开样式</div>
                         <mdui-dropdown>
                             <mdui-button slot="trigger" variant="tonal" style={{ width: '200px' }}>
                                 {clickStyleLabels[clickExpandStyle] || clickStyleLabels.bar}
@@ -150,7 +150,7 @@ const WindowSettings = ({ config, handleTransformChange, styles }) => {
                                 </mdui-menu-item>
                             </mdui-menu>
                         </mdui-dropdown>
-                        <div className={styles.helpText}>Available only for Click Expand. Edge Handle uses horizontal slide in/out animation.</div>
+                        <div className={styles.helpText}>仅在“点击展开”模式下可选，贴边把手将使用水平滑入/滑出动画</div>
                     </div>
                 )}
             </mdui-card>
