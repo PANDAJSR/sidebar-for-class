@@ -123,13 +123,13 @@
 #sidebar.edge-tab-style::after {
     content: "";
     position: absolute;
-    right: 4px;
+    left: calc(100% - 7px);
     top: 50%;
     width: 8px;
     height: 8px;
     border-top: 2.5px solid rgba(255, 255, 255, 0.95);
     border-right: 2.5px solid rgba(255, 255, 255, 0.95);
-    transform: translateY(-50%) rotate(45deg);
+    transform: translate(-50%, -50%) rotate(45deg);
     opacity: 0;
     transition: opacity 0.2s ease;
     pointer-events: none;
