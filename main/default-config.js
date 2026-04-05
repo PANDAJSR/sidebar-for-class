@@ -11,6 +11,7 @@ const DEFAULT_CONFIG = {
         "size": 130,
         "auto_hide": true,
         "expand_mode": "drag",
+        "click_expand_style": "bar",
         "panel": {
             "opacity": 0.9,
             "height": 450,

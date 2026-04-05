@@ -105,6 +105,41 @@
     pointer-events: auto;
 }
 
+/* 点击展开 - 贴边把手样式 */
+#sidebar-wrapper.edge-tab-mode:not(.expanded) {
+    width: 44px;
+}
+
+#sidebar-wrapper.edge-tab-mode:not(.expanded) #sidebar.edge-tab-style {
+    cursor: pointer;
+    background-color: rgba(84, 108, 126, 0.95);
+    box-shadow: 0 8px 24px rgba(17, 24, 39, 0.28);
+}
+
+#sidebar-wrapper.edge-tab-mode:not(.expanded) #sidebar.edge-tab-style::before {
+    opacity: 0;
+}
+
+#sidebar.edge-tab-style::after {
+    content: "";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    border-top: 3px solid rgba(255, 255, 255, 0.95);
+    border-right: 3px solid rgba(255, 255, 255, 0.95);
+    transform: translateY(-50%) rotate(45deg);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 2;
+}
+
+#sidebar-wrapper.edge-tab-mode:not(.expanded) #sidebar.edge-tab-style::after {
+    opacity: 1;
+}
+
 /* 截图成功遮罩 */
 .screenshot-overlay {
     position: absolute;

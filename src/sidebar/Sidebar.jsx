@@ -19,6 +19,8 @@ const Sidebar = () => {
     const { sidebarRef, wrapperRef, animationIdRef, draggingState, constants } = useSidebarRefs();
     const { config, scale, startH, panelWidth, panelHeight } = useSidebarConfig();
     const expandMode = config?.transforms?.expand_mode || 'drag';
+    const clickExpandStyle = config?.transforms?.click_expand_style || 'bar';
+    const isEdgeTabStyle = expandMode === 'click' && clickExpandStyle === 'edge_tab';
     const allowDragExpand = expandMode === 'drag' || expandMode === 'both';
     const allowClickExpand = expandMode === 'click' || expandMode === 'both';
     
@@ -42,6 +44,9 @@ const Sidebar = () => {
 
     // 4. 钩子函数调用 (获取控制状态)
     const { isExpanded, expand, collapse, updateSidebarStyles, stopAnimation, setIgnoreMouse, setWindowToLarge } = useSidebarAnimation(config, scale, startH, panelWidth, panelHeight, sidebarRef, wrapperRef, animationIdRef, draggingState, constants);
+    const wrapperClassName = [isExpanded ? 'expanded' : '', isEdgeTabStyle ? 'edge-tab-mode' : '']
+        .filter(Boolean)
+        .join(' ');
     const { handleStart, handleMove, handleEnd } = useSidebarDrag(isExpanded, updateSidebarStyles, expand, collapse, stopAnimation, setIgnoreMouse, sidebarRef, wrapperRef, animationIdRef, draggingState, constants, panelWidth, setWindowToLarge, screenshotPath, allowDragExpand);
 
     // 5. 其他辅助钩子
@@ -108,12 +113,12 @@ const Sidebar = () => {
     return (
         <div id="sidebar-wrapper"
             ref={wrapperRef}
-            className={isExpanded ? 'expanded' : ''}
+            className={wrapperClassName}
             onMouseDown={(e) => handleStart(e.screenX, e.target)}
             onTouchStart={(e) => e.touches.length > 0 && handleStart(e.touches[0].screenX, e.target)}
             onClick={handleWrapperClick}
         >
-            <div id="sidebar" ref={sidebarRef}>
+            <div id="sidebar" ref={sidebarRef} className={isEdgeTabStyle ? 'edge-tab-style' : ''}>
                 <div id="content">
                     <button id="settings-btn" className="settings-button" title="设置" onClick={handleSettingsClick}>
                         <i className="fas fa-cog"></i>
