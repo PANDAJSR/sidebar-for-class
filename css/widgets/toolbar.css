@@ -1,136 +1,86 @@
-/* 工具栏组件样式 */
+﻿/* 工具栏组件样式 */
 .toolbar-widget {
     padding: 0;
 }
 
+.toolbar-buttons {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+    background:
+        linear-gradient(155deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.12));
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 16px;
+    padding: 8px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.16);
+}
+
+.toolbar-widget.single-tool .toolbar-buttons {
+    grid-template-columns: minmax(0, 1fr);
+}
+
 .widget-header-title-inner {
-    flex: 1 1 100%;
+    grid-column: 1 / -1;
     font-size: 10px;
     font-weight: 700;
-    color: var(--text-muted);
-    padding: 6px 10px 2px 10px;
-    opacity: 0.8;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.9px;
     text-transform: uppercase;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-}
-
-.toolbar-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    background: var(--bg-transparent);
+    color: #64748b;
+    padding: 2px 6px 0;
     opacity: 0.95;
-    border-radius: var(--widget-border-radius);
-    border: var(--widget-border);
-    overflow: hidden;
-    position: relative;
-    gap: 0;
-    transition: all 0.2s ease;
-    box-shadow: var(--widget-shadow);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
 }
 
-.toolbar-buttons:hover {
-    background: var(--bg-transparent-hover);
-}
-
-/* mdui 按钮样式 - 白色背景，悬浮显示主题色 */
 .toolbar-button {
-    /* 将 elevated 按钮的背景色设为白色 */
-    --mdui-color-surface-container-low: 255, 255, 255 !important;
-    --mdui-color-surface-container: 255, 255, 255 !important;
-    flex: 1 1 20%;
-    min-width: 0;
-    box-sizing: border-box;
     position: relative;
-    height: auto;
-    min-height: 70px;
-}
-
-.toolbar-widget.single-tool .toolbar-button {
-    flex: 1 1 100%;
-    max-width: 100%;
-}
-
-.toolbar-button::part(button) {
-    border: 2px solid var(--theme-color) !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    display: flex;
     flex-direction: column;
-    padding: 8px 4px 12px 4px;
-    height: 100%;
-    min-height: unset;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 68px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(244, 247, 255, 0.84));
+    padding: 8px 6px 10px;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    overflow: hidden;
 }
 
-/* 调整 mdui 按钮内部布局 */
-.toolbar-button::part(icon) {
-    margin: 0 0 2px 0 !important;
-}
-
-.toolbar-button::part(label) {
-    overflow: visible !important;
-    white-space: nowrap;
-}
-
-.toolbar-button:hover::part(button) {
-    background-color: var(--theme-color) !important;
-    border-color: var(--theme-color) !important;
-    color: white !important;
-}
-
-.toolbar-button:active::part(button) {
-    scale: 0.98;
-}
-
-/* 悬浮时图标和文字变为白色 */
-.toolbar-button:hover::part(label) {
-    color: white !important;
-}
-
-.toolbar-button:hover .toolbar-icon i {
-    color: white !important;
-}
-
-/* 分割线逻辑 - 考虑标题占据第一个位置的情况 */
-.iccce-control-widget .toolbar-button:not(:nth-child(5n+2))::before {
+.toolbar-button::before {
     content: "";
     position: absolute;
-    left: 0;
-    top: 10px;
-    bottom: 10px;
-    width: 1px;
-    background: rgba(0, 0, 0, 0.06);
+    inset: 0;
+    background: linear-gradient(130deg, rgba(59, 130, 246, 0.18), rgba(88, 101, 242, 0));
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
 }
 
-.iccce-control-widget .toolbar-button:not(:nth-child(-n+6))::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 10px;
-    right: 10px;
-    height: 1px;
-    background: rgba(0, 0, 0, 0.06);
+.toolbar-button:hover {
+    transform: translateY(-2px);
+    border-color: rgba(125, 157, 255, 0.9);
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.24);
 }
 
-/* 原始工具栏分割线逻辑保持不变，通过类名区分 */
-.toolbar-widget:not(.iccce-control-widget) .toolbar-button:not(:nth-child(5n+1))::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 10px;
-    bottom: 10px;
-    width: 1px;
-    background: rgba(0, 0, 0, 0.06);
+.toolbar-button:hover::before {
+    opacity: 1;
 }
 
-.toolbar-widget:not(.iccce-control-widget) .toolbar-button:not(:nth-child(-n+5))::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 10px;
-    right: 10px;
-    height: 1px;
-    background: rgba(0, 0, 0, 0.06);
+.toolbar-button:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+.toolbar-button:focus-visible {
+    outline: none;
+    box-shadow:
+        0 0 0 2px rgba(255, 255, 255, 0.95),
+        0 0 0 4px rgba(59, 130, 246, 0.45),
+        0 10px 20px rgba(37, 99, 235, 0.24);
 }
 
 .toolbar-icon {
@@ -139,22 +89,43 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 1;
 }
 
 .toolbar-icon i {
-    font-size: 18px;
-    color: var(--text-muted);
-    transition: color 0.2s ease;
+    font-size: 17px;
+    color: #1e3a8a;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.toolbar-button:hover .toolbar-icon i {
+    color: #1d4ed8;
+    transform: scale(1.05);
 }
 
 .toolbar-button-text {
+    position: relative;
+    z-index: 1;
     font-size: 11px;
-    font-weight: 600;
-    color: var(--text-muted);
+    line-height: 1.2;
+    font-weight: 700;
+    color: #0f172a;
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
-    transition: color 0.2s ease;
+}
+
+.toolbar-widget.single-tool .toolbar-button {
+    min-height: 56px;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 8px 12px;
+}
+
+.toolbar-widget.single-tool .toolbar-button-text {
+    font-size: 12px;
 }

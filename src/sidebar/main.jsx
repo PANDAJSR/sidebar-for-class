@@ -6,7 +6,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import Sidebar from './Sidebar'
-import 'mdui/mdui.css';
 import '../../style.css'
 
 // 获取应用挂载的根元素

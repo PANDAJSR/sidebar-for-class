@@ -22,7 +22,7 @@
 /* 6. 动画定义 */
 @import "./css/animations.css";
 
-/* 覆盖 mdui 的页面背景，保持透明 */
+/* 保持页面透明背景，便于侧边栏悬浮显示 */
 body,
 :root {
     background: transparent !important;
