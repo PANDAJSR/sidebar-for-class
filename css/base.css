@@ -13,6 +13,10 @@ html {
     user-select: none;
 }
 
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
 #app {
     display: flex;
     align-items: center;
