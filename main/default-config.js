@@ -78,7 +78,8 @@ const DEFAULT_CONFIG = {
         {
             "type": "iccce_control",
             "functions": ["randone", "rand", "timer", "whiteboard", "show"],
-            "show_only_when_running": true
+            "show_only_when_running": true,
+            "show_only_when_collapsed": false
         }
     ],
     "automatic": [],

@@ -149,11 +149,15 @@ const Sidebar = () => {
                                 />;
                             }
                             else if (widget.type === 'iccce_control') {
-                                // 检查是否开启了“仅在运行显示”且当前未运行
+                                // 检查是否开启了"仅在运行显示"且当前未运行
                                 if (widget.show_only_when_running !== false && !isIccRunning) {
                                     return null;
                                 }
-return <ICCCEControl
+                                // 检查是否开启了"仅在收纳模式显示"且当前不是收纳模式
+                                if (widget.show_only_when_collapsed && isExpanded) {
+                                    return null;
+                                }
+                                return <ICCCEControl
                                     key={index}
                                     {...widget}
                                     isExpanded={isExpanded}
