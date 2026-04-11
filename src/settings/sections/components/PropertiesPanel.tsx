@@ -1,15 +1,4 @@
-/**
- * 属性面板组件
- * 显示选中组件的属性，支持编辑组件的各种配置
- * @param {Object} styles - 样式对象
- * @param {string} activeTab - 当前激活的标签页
- * @param {Function} setActiveTab - 设置激活标签页的函数
- * @param {Object} selectedWidget - 当前选中的组件对象
- * @param {Function} updateWidgetProperty - 更新组件属性的函数
- * @param {Function} onDeselectWidget - 取消选择组件的回调函数
- */
-
-import { useState } from 'react';
+import { useState, DragEvent } from 'react';
 import Card from '@mui/joy/Card';
 import Slider from '@mui/joy/Slider';
 import Switch from '@mui/joy/Switch';
@@ -33,7 +22,63 @@ import FolderIcon from '@mui/icons-material/Folder';
 import BuildIcon from '@mui/icons-material/Build';
 import SchoolIcon from '@mui/icons-material/School';
 
-const PropertiesPanel = ({
+interface WidgetTarget {
+    name: string;
+    target: string;
+    args: string[];
+}
+
+interface Widget {
+    type: 'launcher' | 'volume_slider' | 'files' | 'drag_to_launch' | 'toolbar' | 'iccce_control';
+    layout?: string;
+    targets?: WidgetTarget[];
+    range?: [number, number];
+    folder_path?: string;
+    max_count?: number;
+    name?: string;
+    show_all_time?: boolean;
+    tools?: string[];
+    functions?: string[];
+    show_only_when_running?: boolean;
+}
+
+interface Config {
+    helper_tools?: {
+        icc_compatibility?: boolean;
+    };
+    widgets: Widget[];
+}
+
+interface PropertiesPanelProps {
+    config: Config;
+    updateConfig: (config: Config) => void;
+    styles: {
+        propertiesPanel: string;
+        propertiesContent: string;
+        propertyGroup: string;
+        propertySection: string;
+        formGroup: string;
+        label: string;
+        rangeContainer: string;
+        rangeValue: string;
+        switchRow: string;
+        libraryGrid: string;
+        libraryItem: string;
+        libraryItemIcon: string;
+        libraryItemContent: string;
+        libraryItemTitle: string;
+        libraryItemDesc: string;
+    };
+    activeTab: string;
+    setActiveTab: (tab: string) => void;
+    selectedWidget: Widget | null;
+    updateWidgetProperty: (property: string, value: unknown) => void;
+    onDeselectWidget?: () => void;
+    onAddComponent: (type: string) => void;
+    onDragEnd?: () => void;
+}
+
+const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
     config,
     updateConfig,
     styles,
@@ -45,11 +90,11 @@ const PropertiesPanel = ({
     onAddComponent,
     onDragEnd
 }) => {
-    const [editingTargetIndex, setEditingTargetIndex] = useState(null);
-    const [draggingToolIndex, setDraggingToolIndex] = useState(null);
-    const [dragOverToolIndex, setDragOverToolIndex] = useState(null);
+    const [editingTargetIndex, setEditingTargetIndex] = useState<number | null>(null);
+    const [draggingToolIndex, setDraggingToolIndex] = useState<number | null>(null);
+    const [dragOverToolIndex, setDragOverToolIndex] = useState<number | null>(null);
 
-    const handleTabChange = (tab) => {
+    const handleTabChange = (tab: string) => {
         setActiveTab(tab);
         if (tab === 'library' && onDeselectWidget) {
             onDeselectWidget();
@@ -57,8 +102,8 @@ const PropertiesPanel = ({
     };
 
     const handleAddTarget = () => {
-        const currentTargets = selectedWidget.targets || [];
-        const newTarget = {
+        const currentTargets = selectedWidget?.targets || [];
+        const newTarget: WidgetTarget = {
             name: '新目标',
             target: '',
             args: []
@@ -67,19 +112,19 @@ const PropertiesPanel = ({
         setEditingTargetIndex(currentTargets.length);
     };
 
-    const handleDeleteTarget = (index) => {
-        const currentTargets = selectedWidget.targets || [];
+    const handleDeleteTarget = (index: number) => {
+        const currentTargets = selectedWidget?.targets || [];
         const newTargets = currentTargets.filter((_, i) => i !== index);
         updateWidgetProperty('targets', newTargets);
         if (editingTargetIndex === index) {
             setEditingTargetIndex(null);
-        } else if (editingTargetIndex > index) {
+        } else if (editingTargetIndex !== null && editingTargetIndex > index) {
             setEditingTargetIndex(editingTargetIndex - 1);
         }
     };
 
-    const handleUpdateTarget = (index, field, value) => {
-        const currentTargets = selectedWidget.targets || [];
+    const handleUpdateTarget = (index: number, field: keyof WidgetTarget, value: string | string[]) => {
+        const currentTargets = selectedWidget?.targets || [];
         const newTargets = currentTargets.map((target, i) => {
             if (i === index) {
                 return { ...target, [field]: value };
@@ -89,8 +134,8 @@ const PropertiesPanel = ({
         updateWidgetProperty('targets', newTargets);
     };
 
-    const handleMoveTarget = (index, direction) => {
-        const currentTargets = selectedWidget.targets || [];
+    const handleMoveTarget = (index: number, direction: 'up' | 'down') => {
+        const currentTargets = selectedWidget?.targets || [];
         if (direction === 'up' && index > 0) {
             const newTargets = [...currentTargets];
             [newTargets[index - 1], newTargets[index]] = [newTargets[index], newTargets[index - 1]];
@@ -113,37 +158,37 @@ const PropertiesPanel = ({
     };
 
     const handleAddTool = () => {
-        const currentTools = selectedWidget.tools || [];
+        const currentTools = selectedWidget?.tools || [];
         updateWidgetProperty('tools', [...currentTools, 'screenshot']);
     };
 
-    const handleDeleteTool = (index) => {
-        const currentTools = selectedWidget.tools || [];
+    const handleDeleteTool = (index: number) => {
+        const currentTools = selectedWidget?.tools || [];
         const newTools = currentTools.filter((_, i) => i !== index);
         updateWidgetProperty('tools', newTools);
     };
 
-    const handleUpdateTool = (index, newValue) => {
-        const currentTools = selectedWidget.tools || [];
+    const handleUpdateTool = (index: number, newValue: string) => {
+        const currentTools = selectedWidget?.tools || [];
         const newTools = [...currentTools];
         newTools[index] = newValue;
         updateWidgetProperty('tools', newTools);
     };
 
-    const handleToolDragStart = (e, index) => {
+    const handleToolDragStart = (e: DragEvent, index: number) => {
         setDraggingToolIndex(index);
         if (e.dataTransfer) {
             e.dataTransfer.effectAllowed = 'move';
         }
     };
 
-    const handleToolDragOver = (e, index) => {
+    const handleToolDragOver = (e: DragEvent, index: number) => {
         e.preventDefault();
         if (draggingToolIndex === null || draggingToolIndex === index) return;
         setDragOverToolIndex(index);
     };
 
-    const handleToolDrop = (e, targetIndex) => {
+    const handleToolDrop = (e: DragEvent, targetIndex: number) => {
         e.preventDefault();
         if (draggingToolIndex === null || draggingToolIndex === targetIndex) {
             setDraggingToolIndex(null);
@@ -151,7 +196,7 @@ const PropertiesPanel = ({
             return;
         }
 
-        const currentTools = selectedWidget.tools || [];
+        const currentTools = selectedWidget?.tools || [];
         const newTools = [...currentTools];
         const draggedTool = newTools[draggingToolIndex];
 
@@ -164,40 +209,40 @@ const PropertiesPanel = ({
     };
 
     const handleAddFunction = () => {
-        const currentFunctions = selectedWidget.functions || [];
+        const currentFunctions = selectedWidget?.functions || [];
         updateWidgetProperty('functions', [...currentFunctions, 'randone']);
     };
 
-    const handleDeleteFunction = (index) => {
-        const currentFunctions = selectedWidget.functions || [];
+    const handleDeleteFunction = (index: number) => {
+        const currentFunctions = selectedWidget?.functions || [];
         const newFunctions = currentFunctions.filter((_, i) => i !== index);
         updateWidgetProperty('functions', newFunctions);
     };
 
-    const handleUpdateFunction = (index, newValue) => {
-        const currentFunctions = selectedWidget.functions || [];
+    const handleUpdateFunction = (index: number, newValue: string) => {
+        const currentFunctions = selectedWidget?.functions || [];
         const newFunctions = [...currentFunctions];
         newFunctions[index] = newValue;
         updateWidgetProperty('functions', newFunctions);
     };
 
-    const [draggingFuncIndex, setDraggingFuncIndex] = useState(null);
-    const [dragOverFuncIndex, setDragOverFuncIndex] = useState(null);
+    const [draggingFuncIndex, setDraggingFuncIndex] = useState<number | null>(null);
+    const [dragOverFuncIndex, setDragOverFuncIndex] = useState<number | null>(null);
 
-    const handleFuncDragStart = (e, index) => {
+    const handleFuncDragStart = (e: DragEvent, index: number) => {
         setDraggingFuncIndex(index);
         if (e.dataTransfer) {
             e.dataTransfer.effectAllowed = 'move';
         }
     };
 
-    const handleFuncDragOver = (e, index) => {
+    const handleFuncDragOver = (e: DragEvent, index: number) => {
         e.preventDefault();
         if (draggingFuncIndex === null || draggingFuncIndex === index) return;
         setDragOverFuncIndex(index);
     };
 
-    const handleFuncDrop = (e, targetIndex) => {
+    const handleFuncDrop = (e: DragEvent, targetIndex: number) => {
         e.preventDefault();
         if (draggingFuncIndex === null || draggingFuncIndex === targetIndex) {
             setDraggingFuncIndex(null);
@@ -205,7 +250,7 @@ const PropertiesPanel = ({
             return;
         }
 
-        const currentFunctions = selectedWidget.functions || [];
+        const currentFunctions = selectedWidget?.functions || [];
         const newFunctions = [...currentFunctions];
         const draggedFunc = newFunctions[draggingFuncIndex];
 
@@ -217,7 +262,7 @@ const PropertiesPanel = ({
         setDragOverFuncIndex(null);
     };
 
-    const handleLibraryDragStart = (e, type) => {
+    const handleLibraryDragStart = (e: DragEvent, type: string) => {
         e.dataTransfer.effectAllowed = 'copy';
         e.dataTransfer.setData('application/react-dnd-type', type);
     };
@@ -226,7 +271,7 @@ const PropertiesPanel = ({
         <div className={styles.propertiesPanel}>
             <Tabs
                 value={activeTab}
-                onChange={(_, value) => handleTabChange(value)}
+                onChange={(_, value) => handleTabChange(value as string)}
             >
                 <TabList>
                     <Tab value="properties">属性</Tab>
@@ -357,7 +402,7 @@ const PropertiesPanel = ({
                                         value={selectedWidget.range?.[0] || 0}
                                         onChange={(_, value) => {
                                             const currentMax = selectedWidget.range?.[1] || 100;
-                                            const newVal = Math.min(value, currentMax);
+                                            const newVal = Math.min(value as number, currentMax);
                                             updateWidgetProperty('range', [newVal, currentMax]);
                                         }}
                                     />
@@ -374,7 +419,7 @@ const PropertiesPanel = ({
                                         value={selectedWidget.range?.[1] || 100}
                                         onChange={(_, value) => {
                                             const currentMin = selectedWidget.range?.[0] || 0;
-                                            const newVal = Math.max(value, currentMin);
+                                            const newVal = Math.max(value as number, currentMin);
                                             updateWidgetProperty('range', [currentMin, newVal]);
                                         }}
                                     />
@@ -493,9 +538,9 @@ const PropertiesPanel = ({
                                             <Box
                                                 key={`${index}-${toolId}`}
                                                 draggable
-                                                onDragStart={(e) => handleToolDragStart(e, index)}
-                                                onDragOver={(e) => handleToolDragOver(e, index)}
-                                                onDrop={(e) => handleToolDrop(e, index)}
+                                                onDragStart={(e) => handleToolDragStart(e as unknown as DragEvent, index)}
+                                                onDragOver={(e) => handleToolDragOver(e as unknown as DragEvent, index)}
+                                                onDrop={(e) => handleToolDrop(e as unknown as DragEvent, index)}
                                                 onDragEnd={() => {
                                                     setDraggingToolIndex(null);
                                                     setDragOverToolIndex(null);
@@ -524,7 +569,7 @@ const PropertiesPanel = ({
                                                 <Box sx={{ flex: 1 }}>
                                                     <Select
                                                         value={toolId}
-                                                        onChange={(_, value) => handleUpdateTool(index, value)}
+                                                        onChange={(_, value) => handleUpdateTool(index, value as string)}
                                                         size="sm"
                                                         sx={{ width: '100%' }}
                                                     >
@@ -594,9 +639,9 @@ const PropertiesPanel = ({
                                             <Box
                                                 key={`${index}-${funcId}`}
                                                 draggable
-                                                onDragStart={(e) => handleFuncDragStart(e, index)}
-                                                onDragOver={(e) => handleFuncDragOver(e, index)}
-                                                onDrop={(e) => handleFuncDrop(e, index)}
+                                                onDragStart={(e) => handleFuncDragStart(e as unknown as DragEvent, index)}
+                                                onDragOver={(e) => handleFuncDragOver(e as unknown as DragEvent, index)}
+                                                onDrop={(e) => handleFuncDrop(e as unknown as DragEvent, index)}
                                                 onDragEnd={() => {
                                                     setDraggingFuncIndex(null);
                                                     setDragOverFuncIndex(null);
@@ -625,7 +670,7 @@ const PropertiesPanel = ({
                                                 <Box sx={{ flex: 1 }}>
                                                     <Select
                                                         value={funcId === 'show' ? 'toggle' : funcId}
-                                                        onChange={(_, value) => handleUpdateFunction(index, value)}
+                                                        onChange={(_, value) => handleUpdateFunction(index, value as string)}
                                                         size="sm"
                                                         sx={{ width: '100%' }}
                                                     >
@@ -725,7 +770,7 @@ const PropertiesPanel = ({
                             className={styles.libraryItem}
                             onClick={() => onAddComponent('launcher')}
                             draggable
-                            onDragStart={(e) => handleLibraryDragStart(e, 'launcher')}
+                            onDragStart={(e) => handleLibraryDragStart(e as unknown as DragEvent, 'launcher')}
                             onDragEnd={onDragEnd}
                             style={{ cursor: 'grab' }}
                         >
@@ -742,7 +787,7 @@ const PropertiesPanel = ({
                             className={styles.libraryItem}
                             onClick={() => onAddComponent('volume_slider')}
                             draggable
-                            onDragStart={(e) => handleLibraryDragStart(e, 'volume_slider')}
+                            onDragStart={(e) => handleLibraryDragStart(e as unknown as DragEvent, 'volume_slider')}
                             onDragEnd={onDragEnd}
                             style={{ cursor: 'grab' }}
                         >
@@ -759,7 +804,7 @@ const PropertiesPanel = ({
                             className={styles.libraryItem}
                             onClick={() => onAddComponent('drag_to_launch')}
                             draggable
-                            onDragStart={(e) => handleLibraryDragStart(e, 'drag_to_launch')}
+                            onDragStart={(e) => handleLibraryDragStart(e as unknown as DragEvent, 'drag_to_launch')}
                             onDragEnd={onDragEnd}
                             style={{ cursor: 'grab' }}
                         >
@@ -776,7 +821,7 @@ const PropertiesPanel = ({
                             className={styles.libraryItem}
                             onClick={() => onAddComponent('files')}
                             draggable
-                            onDragStart={(e) => handleLibraryDragStart(e, 'files')}
+                            onDragStart={(e) => handleLibraryDragStart(e as unknown as DragEvent, 'files')}
                             onDragEnd={onDragEnd}
                             style={{ cursor: 'grab' }}
                         >
@@ -793,7 +838,7 @@ const PropertiesPanel = ({
                             className={styles.libraryItem}
                             onClick={() => onAddComponent('toolbar')}
                             draggable
-                            onDragStart={(e) => handleLibraryDragStart(e, 'toolbar')}
+                            onDragStart={(e) => handleLibraryDragStart(e as unknown as DragEvent, 'toolbar')}
                             onDragEnd={onDragEnd}
                             style={{ cursor: 'grab' }}
                         >
@@ -810,7 +855,7 @@ const PropertiesPanel = ({
                             className={styles.libraryItem}
                             onClick={() => onAddComponent('iccce_control')}
                             draggable
-                            onDragStart={(e) => handleLibraryDragStart(e, 'iccce_control')}
+                            onDragStart={(e) => handleLibraryDragStart(e as unknown as DragEvent, 'iccce_control')}
                             onDragEnd={onDragEnd}
                             style={{ cursor: 'grab' }}
                         >

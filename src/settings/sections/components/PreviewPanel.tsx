@@ -1,34 +1,66 @@
-/**
- * 预览面板组件
- * 显示所有组件的预览，支持拖拽排序和选择
- * @param {Object} config - 配置对象
- * @param {Object} styles - 样式对象
- * @param {Map} widgetIcons - 组件图标缓存
- * @param {boolean} isLongPressing - 是否正在长按拖拽
- * @param {number} draggingIndex - 正在拖拽的组件索引
- * @param {number} dragOverIndex - 拖拽悬停的组件索引
- * @param {number} selectedWidgetIndex - 选中的组件索引
- * @param {Object} pointerPos - 指针位置
- * @param {Function} clearSelection - 清除选择的回调
- * @param {Function} handlePointerMove - 指针移动处理函数
- * @param {Function} handlePointerUp - 指针抬起处理函数
- * @param {Function} handlePointerDown - 指针按下处理函数
- * @param {Function} handleDragStart - 拖拽开始处理函数
- * @param {Function} handleDragOver - 拖拽悬停处理函数
- * @param {Function} handleDragEnd - 拖拽结束处理函数
- * @param {Function} handleDrop - 放置处理函数
- * @param {Function} handleWidgetClick - 组件点击处理函数
- * @param {Component} LauncherItemPreview - 启动器项预览组件
- * @param {Component} VolumeWidgetPreview - 音量控制预览组件
- * @param {Component} FilesWidgetPreview - 文件列表预览组件
- * @param {Component} DragToLaunchWidgetPreview - 拖放速启预览组件
- */
-
-import React from 'react';
+import React, { DragEvent, PointerEvent } from 'react';
 import { mergeClasses, Button } from "@fluentui/react-components";
 import { DeleteRegular } from "@fluentui/react-icons";
 
-const PreviewPanel = ({
+interface Widget {
+    type: 'launcher' | 'volume_slider' | 'files' | 'drag_to_launch' | 'toolbar' | 'iccce_control';
+    layout?: string;
+    targets?: Array<{ name: string; target: string; args: string[] }>;
+    range?: [number, number];
+    folder_path?: string;
+    max_count?: number;
+    name?: string;
+    show_all_time?: boolean;
+    tools?: string[];
+    functions?: string[];
+    show_only_when_running?: boolean;
+}
+
+interface Config {
+    widgets: Widget[];
+}
+
+interface PreviewPanelProps {
+    config: Config;
+    styles: {
+        previewPanel: string;
+        widgetList: string;
+        widgetItem: string;
+        widgetItemSelected: string;
+        widgetDragging: string;
+        widgetDragOver: string;
+        widgetHidden: string;
+        widgetDropZone: string;
+        widgetDropZoneDragOver: string;
+        dragGhost: string;
+        widgetType: string;
+        widgetInfo: string;
+    };
+    isLongPressing: boolean;
+    draggingIndex: number | null;
+    dragOverIndex: number | null;
+    selectedWidgetIndex: number | null;
+    pointerPos: { x: number; y: number };
+    clearSelection: () => void;
+    handlePointerMove: (e: PointerEvent) => void;
+    handlePointerUp: (index: number | null) => void;
+    handlePointerDown: (e: PointerEvent, index: number) => void;
+    handleDragStart: (e: DragEvent, index: number) => void;
+    handleDragOver: (e: DragEvent, index: number) => void;
+    handleDragLeave: (index: number) => void;
+    handleDragEnd: () => void;
+    handleDrop: (e: DragEvent, index: number) => void;
+    handleWidgetClick: (e: React.MouseEvent, index: number) => void;
+    handleDeleteWidget: (index: number) => void;
+    LauncherItemPreview: React.ComponentType<{ name?: string; target?: string; args?: string[]; widgetIndex: number; targetIndex: number }>;
+    VolumeWidgetPreview: React.ComponentType<Widget>;
+    FilesWidgetPreview: React.ComponentType<Widget & { widgetIndex: number }>;
+    DragToLaunchWidgetPreview: React.ComponentType<Widget & { widgetIndex: number }>;
+    ToolbarWidgetPreview: React.ComponentType<Widget>;
+    ICCCeControlPreview: React.ComponentType<Widget>;
+}
+
+const PreviewPanel: React.FC<PreviewPanelProps> = ({
     config,
     styles,
     isLongPressing,
@@ -54,8 +86,7 @@ const PreviewPanel = ({
     ToolbarWidgetPreview,
     ICCCeControlPreview
 }) => {
-    // 组件类型名称映射
-    const WIDGET_TYPE_NAMES = {
+    const WIDGET_TYPE_NAMES: Record<string, string> = {
         launcher: '启动器',
         volume_slider: '音量控制',
         files: '文件列表',
@@ -64,8 +95,7 @@ const PreviewPanel = ({
         iccce_control: 'ICC-CE 控制'
     };
 
-    // 包装指针抬起处理函数
-    const handlePointerUpWrapper = (e) => {
+    const handlePointerUpWrapper = (e: PointerEvent) => {
         handlePointerUp(dragOverIndex);
     };
 
@@ -83,7 +113,6 @@ const PreviewPanel = ({
             onPointerCancel={handlePointerUpWrapper}
         >
             <div className={styles.widgetList} style={{ minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
-                {/* 渲染所有组件 */}
                 {config.widgets.map((widget, index) => (
                     <div
                         key={index}
@@ -115,7 +144,6 @@ const PreviewPanel = ({
                             userSelect: 'none',
                             marginBottom: selectedWidgetIndex === index ? '12px' : '0'
                         }}>
-                            {/* 根据组件类型渲染不同的预览 */}
                             {widget.type === 'launcher' && (
                                 <div className={`launcher-group layout-${widget.layout || 'vertical'}`}>
                                     {widget.targets?.map((target, tIndex) => (
@@ -134,7 +162,6 @@ const PreviewPanel = ({
                             {widget.type === 'iccce_control' && <ICCCeControlPreview {...widget} />}
                         </div>
 
-                        {/* 选中时显示组件信息 */}
                         {selectedWidgetIndex === index && (
                             <div style={{
                                 display: 'flex',
@@ -172,7 +199,6 @@ const PreviewPanel = ({
                     </div>
                 ))}
 
-                {/* 底部放置区域：占据剩余空间，但指示线只在顶部显示 */}
                 <div
                     style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: '100px' }}
                     onDragOver={(e) => handleDragOver(e, config.widgets.length)}
@@ -192,7 +218,6 @@ const PreviewPanel = ({
                 </div>
             </div>
 
-            {/* 长按拖拽时的幽灵元素 */}
             {isLongPressing && draggingIndex !== null && (
                 <div
                     className={styles.dragGhost}
