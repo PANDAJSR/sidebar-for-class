@@ -1,23 +1,19 @@
-/**
- * 应用启动模块
- * 负责应用和URL的启动逻辑
- */
-const { spawn } = require('child_process');
-const { execSync } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const { shell } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const { getExePathFromProtocol } = require('../main-utils');
 const { getDataDir } = require('./config');
 
 /**
- * 封装 spawn 调用以捕获日志
+ * 封装 spawn 调用以捕获日志。
  */
 function spawnWithLogging(cmd, args, label) {
-  const child = spawn(cmd, args, { 
-    detached: true, 
-    stdio: ['ignore', 'pipe', 'pipe'], 
-    shell: true, 
-    windowsHide: true 
+  const child = spawn(cmd, args, {
+    detached: true,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    shell: true,
+    windowsHide: true
   });
 
   child.stdout.on('data', (data) => {
@@ -41,21 +37,45 @@ function resolveNodeCommand() {
 
 function resolvePowerShellCommand() {
   if (process.platform === 'win32') return 'powershell.exe';
+
   try {
-    const output = execSync('command -v pwsh', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    const output = execSync('command -v pwsh', {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    }).trim();
     return output || null;
-  } catch (e) {
+  } catch {
     return null;
   }
 }
 
 /**
- * 启动应用或URL
- * @param {string} target - 目标路径或URL
- * @param {Array<string>} args - 命令行参数
+ * 仅在 data 目录中存在同名文件时，才将相对路径解析到 data 目录；
+ * 否则保留原值（例如 explorer.exe）让系统 PATH 解析。
+ */
+function resolveLauncherTarget(target) {
+  if (path.isAbsolute(target)) {
+    return target;
+  }
+
+  const dataCandidate = path.join(getDataDir(), target);
+  if (fs.existsSync(dataCandidate)) {
+    return dataCandidate;
+  }
+
+  return target;
+}
+
+/**
+ * 启动应用或 URL。
+ * @param {string} target 目标路径或 URL
+ * @param {Array<string>} args 参数
  */
 async function launchApp(target, args = []) {
-  // 如果是URL
+  if (!target) {
+    return;
+  }
+
   if (target.includes('://')) {
     try {
       await shell.openExternal(target);
@@ -65,77 +85,79 @@ async function launchApp(target, args = []) {
     return;
   }
 
-  // 处理相对路径
-  let resolvedTarget = target;
-  if (!path.isAbsolute(target)) {
-    resolvedTarget = path.join(getDataDir(), target);
-  }
-
+  const resolvedTarget = resolveLauncherTarget(target);
   const label = path.basename(resolvedTarget);
 
-  // 针对脚本进行特殊处理
   if (resolvedTarget.toLowerCase().endsWith('.ps1')) {
     const powerShellCommand = resolvePowerShellCommand();
     if (!powerShellCommand) {
       console.warn(`[Launcher] PowerShell is not available on ${process.platform}, skip: ${resolvedTarget}`);
       return;
     }
+
     const psArgs = process.platform === 'win32'
       ? ['-ExecutionPolicy', 'Bypass', '-File', resolvedTarget, ...args]
       : ['-File', resolvedTarget, ...args];
+
     spawnWithLogging(powerShellCommand, psArgs, label);
     return;
-  } else if (resolvedTarget.toLowerCase().endsWith('.js')) {
+  }
+
+  if (resolvedTarget.toLowerCase().endsWith('.js')) {
     spawnWithLogging(resolveNodeCommand(), [resolvedTarget, ...args], label);
     return;
   }
 
-  // 如果没有参数，优先尝试用默认关联程序打开
   if (!args || args.length === 0) {
     const error = await shell.openPath(resolvedTarget);
     if (error) {
       console.error('shell.openPath 失败, 尝试 spawn:', error);
-      // 如果 openPath 失败，回退到 spawn 尝试
       spawnWithLogging(resolvedTarget, [], label);
     }
-  } else {
-    spawnWithLogging(resolvedTarget, args, label);
+    return;
   }
+
+  spawnWithLogging(resolvedTarget, args, label);
 }
 
 /**
- * 获取文件图标
- * @param {string} filePath - 文件路径
- * @param {Electron.App} app - Electron app 实例
- * @returns {Promise<string|null>} 图标的 Data URL，失败返回 null
+ * 获取文件图标。
+ * @param {string} filePath 文件路径
+ * @param {Electron.App} app Electron app 实例
+ * @returns {Promise<string|null>} 图标 Data URL
  */
 async function getFileIcon(filePath, app) {
   try {
     let resolvedPath = filePath;
-    
-    // 如果是协议路径
+
     if (filePath.includes('://')) {
       const protocol = filePath.split('://')[0];
       resolvedPath = getExePathFromProtocol(protocol);
-      if (!resolvedPath) return null;
+      if (!resolvedPath) {
+        return null;
+      }
     } else if (!path.isAbsolute(filePath)) {
-      // 如果是相对路径，尝试查找
-      try {
-        if (process.platform === 'win32') {
-          const output = execSync(`where ${filePath}`, { encoding: 'utf8' });
-          resolvedPath = output.split('\r\n')[0];
-        } else {
-          const output = execSync(`command -v ${filePath}`, { encoding: 'utf8' });
-          resolvedPath = output.split('\n')[0];
+      const localPath = resolveLauncherTarget(filePath);
+      if (localPath !== filePath) {
+        resolvedPath = localPath;
+      } else {
+        try {
+          if (process.platform === 'win32') {
+            const output = execSync(`where ${filePath}`, { encoding: 'utf8' });
+            resolvedPath = output.split('\r\n')[0];
+          } else {
+            const output = execSync(`command -v ${filePath}`, { encoding: 'utf8' });
+            resolvedPath = output.split('\n')[0];
+          }
+        } catch {
+          // 回退到原始值，让 getFileIcon 自己决定是否可解析。
         }
-      } catch (e) {
-        // 回退到路径检查
       }
     }
-    
+
     const icon = await app.getFileIcon(resolvedPath, { size: 'large' });
     return icon.toDataURL();
-  } catch (err) {
+  } catch {
     return null;
   }
 }
