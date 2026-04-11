@@ -63,17 +63,6 @@ const HelperSettings = ({ config, updateConfig, styles }) => {
 
                 <div className={styles.formGroup}>
                     <div className={styles.switchRow}>
-                        <div className={styles.label}>自动查杀同类软件计时器并打开本软件的计时器</div>
-                        <Switch
-                            checked={helperTools.auto_kill_timer || false}
-                            onChange={(e) => handleToggle('auto_kill_timer', e.target.checked)}
-                        />
-                    </div>
-                    <div className={styles.helpText}>检测并关闭希沃计时器等同类软件，并自动启动本软件计时器</div>
-                </div>
-
-                <div className={styles.formGroup}>
-                    <div className={styles.switchRow}>
                         <div className={styles.label}>ICC-CE兼容</div>
                         <Switch
                             checked={helperTools.icc_compatibility || false}
