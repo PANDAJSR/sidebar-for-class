@@ -91,16 +91,6 @@ const SidebarNav = ({ selectedTab, onTabSelect, styles }) => {
                                         '&:hover': {
                                             backgroundColor: 'var(--colorNeutralBackground1Hover)',
                                         },
-                                        '&::before': {
-                                            content: '""',
-                                            position: 'absolute',
-                                            left: '8px',
-                                            top: '8px',
-                                            bottom: '8px',
-                                            width: '3px',
-                                            borderRadius: '2px',
-                                            backgroundColor: 'var(--colorBrandForeground1)',
-                                        },
                                     },
                                 }}
                             >
