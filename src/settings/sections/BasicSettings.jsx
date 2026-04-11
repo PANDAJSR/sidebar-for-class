@@ -7,7 +7,8 @@
  */
 
 import React from 'react';
-import 'mdui/components/card.js';
+import Card from '@mui/joy/Card';
+import Typography from '@mui/joy/Typography';
 
 const BasicSettings = ({ config, updateConfig, styles }) => {
     return (
@@ -17,13 +18,13 @@ const BasicSettings = ({ config, updateConfig, styles }) => {
                 <div className={styles.description}>配置应用程序的基本选项和偏好设置。</div>
             </div>
             <div className={styles.groupTitle}>常规</div>
-            <mdui-card variant="filled" className={styles.card}>
+            <Card variant="soft" className={styles.card}>
                 <div className={styles.formGroup}>
-                    <span style={{ color: 'rgb(var(--mdui-color-on-surface-variant))' }}>
+                    <Typography level="body-sm" sx={{ color: 'var(--joy-palette-text-secondary)' }}>
                         基本设置内容将在这里显示。
-                    </span>
+                    </Typography>
                 </div>
-            </mdui-card>
+            </Card>
         </div>
     );
 };
