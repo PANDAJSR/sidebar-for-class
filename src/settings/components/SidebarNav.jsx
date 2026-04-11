@@ -29,7 +29,7 @@ const iconMap = {
     automation: SmartToyIcon,
     data: StorageIcon,
     timer: TimerIcon,
-    tools: BuildIcon
+    tools: BuildIcon,
 };
 
 const labelMap = {
@@ -40,15 +40,15 @@ const labelMap = {
     automation: '自动化',
     data: '数据',
     timer: '计时器',
-    tools: '辅助工具'
+    tools: '辅助工具',
 };
+
+const tabs = ['basic', 'window', 'style', 'components', 'automation', 'data', 'timer', 'tools'];
 
 const SidebarNav = ({ selectedTab, onTabSelect, styles }) => {
     const handleTabClick = (tabValue) => {
         onTabSelect(tabValue);
     };
-
-    const tabs = ['basic', 'window', 'style', 'components', 'automation', 'data', 'timer', 'tools'];
 
     return (
         <aside className={styles.sidebar}>
@@ -59,32 +59,55 @@ const SidebarNav = ({ selectedTab, onTabSelect, styles }) => {
                     '--List-item-radius': '8px',
                     '--List-item-paddingY': '8px',
                     '--List-item-paddingX': '12px',
+                    width: '100%',
                 }}
             >
                 {tabs.map((tab) => {
                     const Icon = iconMap[tab];
+                    const isSelected = selectedTab === tab;
+
                     return (
                         <ListItem key={tab}>
                             <ListItemButton
-                                selected={selectedTab === tab}
+                                selected={isSelected}
+                                aria-current={isSelected ? 'page' : undefined}
                                 onClick={() => handleTabClick(tab)}
                                 sx={{
                                     borderRadius: '8px',
+                                    minHeight: '40px',
+                                    position: 'relative',
+                                    color: isSelected
+                                        ? 'var(--colorNeutralForeground1)'
+                                        : 'var(--colorNeutralForeground2)',
+                                    fontWeight: isSelected ? 600 : 400,
+                                    '&:hover': {
+                                        backgroundColor: isSelected
+                                            ? 'var(--colorNeutralBackground1Selected)'
+                                            : 'var(--colorNeutralBackground1Hover)',
+                                    },
                                     '&.Mui-selected': {
-                                        backgroundColor: 'var(--joy-palette-primary-container)',
-                                        color: 'var(--joy-palette-on-primary-container)',
+                                        backgroundColor: 'var(--colorNeutralBackground1Selected)',
+                                        color: 'var(--colorNeutralForeground1)',
                                         '&:hover': {
-                                            backgroundColor: 'var(--joy-palette-primary-containerHover)',
-                                        }
-                                    }
+                                            backgroundColor: 'var(--colorNeutralBackground1Hover)',
+                                        },
+                                        '&::before': {
+                                            content: '""',
+                                            position: 'absolute',
+                                            left: '8px',
+                                            top: '8px',
+                                            bottom: '8px',
+                                            width: '3px',
+                                            borderRadius: '2px',
+                                            backgroundColor: 'var(--colorBrandForeground1)',
+                                        },
+                                    },
                                 }}
                             >
                                 <ListItemDecorator>
-                                    {Icon && <Icon sx={{ fontSize: 20 }} />}
+                                    {Icon && <Icon sx={{ fontSize: 20, color: 'currentColor' }} />}
                                 </ListItemDecorator>
-                                <ListItemContent>
-                                    {labelMap[tab]}
-                                </ListItemContent>
+                                <ListItemContent>{labelMap[tab]}</ListItemContent>
                             </ListItemButton>
                         </ListItem>
                     );
