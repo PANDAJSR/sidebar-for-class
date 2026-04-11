@@ -368,6 +368,10 @@ if ($procs) {
   });
 }
 
+function getIsMonitoring(): boolean {
+  return isMonitoring;
+}
+
 export {
   startMonitoring,
   stopMonitoring,
@@ -383,5 +387,5 @@ export {
   findWindowsByTitleKeywords,
   findProcessesByImageNames,
   killProcessByPid,
-  isMonitoring: () => isMonitoring
+  getIsMonitoring
 };

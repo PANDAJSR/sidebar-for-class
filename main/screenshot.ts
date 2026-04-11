@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
+import sharp from 'sharp';
 
 interface ScreenshotPreview {
   label: string;
@@ -21,8 +22,6 @@ interface Display {
 
 async function takeScreenshot(): Promise<ScreenshotResult> {
   try {
-    const sharp = require('sharp');
-
     const desktopPath = path.join(os.homedir(), 'Desktop');
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);

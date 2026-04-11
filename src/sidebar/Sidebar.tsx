@@ -4,7 +4,7 @@ import VolumeWidget from './components/VolumeWidget';
 import FilesWidget from './components/FilesWidget';
 import DragToLaunchWidget from './components/DragToLaunchWidget';
 import Toolbar from './components/Toolbar';
-import ICCCEControl from './components/ICCCEControl';
+import ICCCeControl from './components/ICCCeControl';
 import ScreenshotOverlay from './components/ScreenshotOverlay';
 import useSidebarRefs from './hooks/useSidebarRefs';
 import useSidebarConfig from './hooks/useSidebarConfig';
@@ -187,7 +187,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
                                 if (widget.show_only_when_running !== false && !isIccRunning) {
                                     return null;
                                 }
-                                return <ICCCEControl
+                                return <ICCCeControl
                                     key={index}
                                     {...widget}
                                     isExpanded={isExpanded}

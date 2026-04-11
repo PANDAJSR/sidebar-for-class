@@ -2,16 +2,17 @@
   "name": "sidebar-for-class",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "main.ts",
   "scripts": {
     "start": "vite",
-    "electron": "wait-on http://localhost:3000 && node scripts/run-electron.cjs",
+    "electron": "wait-on http://localhost:3000 && tsx scripts/run-electron.ts",
     "dev": "concurrently \"npm run start\" \"npm run electron\"",
     "build": "vite build",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
     "build:linux": "npm run build && electron-builder --linux",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "tsc"
   },
   "build": {
     "appId": "com.sidebar.class",
@@ -22,9 +23,12 @@
     "files": [
       "dist/**/*",
       "main/**/*",
+      "main.ts",
       "main.js",
+      "preload.ts",
       "preload.js",
       "package.json",
+      "main-utils.ts",
       "main-utils.js"
     ],
     "win": {
@@ -82,6 +86,7 @@
     "electron-builder": "^26.4.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "tsx": "^4.21.0",
     "typescript": "^6.0.2",
     "vite": "^7.3.1",
     "wait-on": "^9.0.3"

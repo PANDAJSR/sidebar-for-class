@@ -90,9 +90,15 @@ async function handleWindowEvent(event: { title: string; hwnd: string; pid: numb
     }
 }
 
+const EVENTS = {
+    SYSTEM_FOREGROUND: 0x0003,
+    OBJECT_CREATE: 0x8000,
+    OBJECT_SHOW: 0x8002
+};
+
 windowMonitor.on('window-event', (event: { title: string; hwnd: string; pid: number; width: number; height: number; type: number }) => {
-    if (event.type === (windowMonitor.constructor as typeof WindowMonitor).EVENTS.OBJECT_CREATE ||
-        event.type === (windowMonitor.constructor as typeof WindowMonitor).EVENTS.OBJECT_SHOW) {
+    if (event.type === EVENTS.OBJECT_CREATE ||
+        event.type === EVENTS.OBJECT_SHOW) {
         handleWindowEvent(event).catch(err => console.error('[Killer] Event handler error:', err));
     }
 });
