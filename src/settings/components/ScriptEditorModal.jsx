@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import Dialog from '@mui/joy/Dialog';
+import Modal from '@mui/joy/Modal';
+import ModalDialog from '@mui/joy/ModalDialog';
 import DialogTitle from '@mui/joy/DialogTitle';
 import DialogContent from '@mui/joy/DialogContent';
 import DialogActions from '@mui/joy/DialogActions';
@@ -79,12 +80,14 @@ const ScriptEditorModal = ({ isOpen, onOpenChange, filePath, onSave }) => {
     };
 
     return (
-        <Dialog
+        <Modal
             open={isOpen}
             onClose={() => onOpenChange(false)}
-            maxWidth="lg"
-            sx={{ maxWidth: '90vw', width: 800, '--Dialog-paper': { height: '80vh' } }}
         >
+            <ModalDialog
+                size="lg"
+                sx={{ maxWidth: '90vw', width: 800, height: '80vh', display: 'flex' }}
+            >
             <DialogTitle sx={{ fontSize: '20px', fontWeight: 500 }}>
                 编辑脚本: {filePath}
             </DialogTitle>
@@ -145,7 +148,8 @@ const ScriptEditorModal = ({ isOpen, onOpenChange, filePath, onSave }) => {
                     保存
                 </Button>
             </DialogActions>
-        </Dialog>
+            </ModalDialog>
+        </Modal>
     );
 };
 

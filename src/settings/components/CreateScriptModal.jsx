@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import Dialog from '@mui/joy/Dialog';
+import Modal from '@mui/joy/Modal';
+import ModalDialog from '@mui/joy/ModalDialog';
 import DialogTitle from '@mui/joy/DialogTitle';
 import DialogContent from '@mui/joy/DialogContent';
 import DialogActions from '@mui/joy/DialogActions';
@@ -31,7 +32,8 @@ const CreateScriptModal = ({ isOpen, onOpenChange, onCreate }) => {
     };
 
     return (
-        <Dialog open={isOpen} onClose={handleClose} maxWidth="sm">
+        <Modal open={isOpen} onClose={handleClose}>
+            <ModalDialog size="md" sx={{ maxWidth: 520, width: '90vw' }}>
             <DialogTitle sx={{ fontSize: '20px', fontWeight: 500 }}>
                 新建脚本
             </DialogTitle>
@@ -67,7 +69,8 @@ const CreateScriptModal = ({ isOpen, onOpenChange, onCreate }) => {
                     创建
                 </Button>
             </DialogActions>
-        </Dialog>
+            </ModalDialog>
+        </Modal>
     );
 };
 
