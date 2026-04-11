@@ -1,15 +1,3 @@
-/**
- * 组件设置页面
- * 提供可视化的组件管理界面，支持拖拽排序、属性编辑等功能
- * @param {Object} config - 配置对象
- * @param {Function} updateConfig - 更新配置的回调函数
- * @param {Object} styles - 样式对象
- * @param {Map} widgetIcons - 组件图标缓存
- * @param {Function} loadIcon - 加载图标的函数
- * @param {Function} preloadWidgetIcons - 预加载组件图标的函数
- * @param {Function} setWidgetIcons - 设置组件图标的函数
- */
-
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
     Tab,
@@ -38,26 +26,89 @@ import {
 } from "@fluentui/react-icons";
 
 import '../../../style.css';
-import useWidgetSelection from './hooks/useWidgetSelection.jsx';
-import useDragAndDrop from './hooks/useDragAndDrop.jsx';
-import useLongPress from './hooks/useLongPress.jsx';
-import useWidgetIcons from './hooks/useWidgetIcons.jsx';
-import useWidgetPropertyUpdate from './hooks/useWidgetPropertyUpdate.jsx';
-import useWidgetPreviews from './hooks/useWidgetPreviews.jsx';
-import PreviewPanel from './components/PreviewPanel.jsx';
-import PropertiesPanel from './components/PropertiesPanel.jsx';
+import useWidgetSelection from './hooks/useWidgetSelection';
+import useDragAndDrop from './hooks/useDragAndDrop';
+import useLongPress from './hooks/useLongPress';
+import useWidgetIcons from './hooks/useWidgetIcons';
+import useWidgetPropertyUpdate from './hooks/useWidgetPropertyUpdate';
+import useWidgetPreviews from './hooks/useWidgetPreviews';
+import PreviewPanel from './components/PreviewPanel';
+import PropertiesPanel from './components/PropertiesPanel';
 
-// // 组件类型名称映射
-// const WIDGET_TYPE_NAMES = {
-//     launcher: '启动器',
-//     volume_slider: '音量控制',
-//     files: '文件列表',
-//     drag_to_launch: '拖放速启',
-//     toolbar: '快捷工具栏'
-// };
+interface Widget {
+    type: string;
+    layout?: string;
+    targets?: Array<{
+        name: string;
+        target: string;
+        args: string[];
+    }>;
+    range?: [number, number];
+    name?: string;
+    show_all_time?: boolean;
+    folder_path?: string;
+    max_count?: number;
+    tools?: string[];
+    functions?: string[];
+}
 
-const ComponentSettings = ({ config, updateConfig, styles, loadIcon, preloadWidgetIcons, setWidgetIcons }) => {
-    // 使用组件选择 Hook：管理当前选中的组件和标签页状态
+interface Config {
+    widgets: Widget[];
+}
+
+interface Styles {
+    componentSettingsSection: string;
+    sectionHeader: string;
+    title: string;
+    description: string;
+    componentLayout: string;
+    leftPanel: string;
+    rightPanel: string;
+    resizer: string;
+}
+
+interface LauncherItemPreviewProps {
+    name: string;
+    target: string;
+    widgetIndex: number;
+    targetIndex: number;
+}
+
+interface VolumeWidgetPreviewProps {
+    range: [number, number];
+}
+
+interface FilesWidgetPreviewProps {
+    folder_path: string;
+    max_count: number;
+    layout?: string;
+    widgetIndex: number;
+}
+
+interface DragToLaunchWidgetPreviewProps {
+    name: string;
+    targets: string;
+    widgetIndex: number;
+}
+
+interface ToolbarWidgetPreviewProps {
+    tools: string[];
+}
+
+interface ICCCeControlPreviewProps {
+    functions: string[];
+}
+
+interface ComponentSettingsProps {
+    config: Config;
+    updateConfig: (config: Config) => void;
+    styles: Styles;
+    loadIcon?: (iconPath: string) => Promise<string>;
+    preloadWidgetIcons?: (widgets: Widget[]) => void;
+    setWidgetIcons?: (icons: Map<string, string>) => void;
+}
+
+const ComponentSettings: React.FC<ComponentSettingsProps> = ({ config, updateConfig, styles, loadIcon, preloadWidgetIcons, setWidgetIcons }) => {
     const {
         activeTab,
         setActiveTab,
@@ -67,13 +118,9 @@ const ComponentSettings = ({ config, updateConfig, styles, loadIcon, preloadWidg
         clearSelection
     } = useWidgetSelection();
 
-    // 创建新组件的辅助函数
-    const createWidget = useCallback((type) => {
-        const newWidget = {
-            type: type
-        };
+    const createWidget = useCallback((type: string): Widget => {
+        const newWidget: Widget = { type };
 
-        // 根据类型设置默认属性
         if (type === 'launcher') {
             newWidget.layout = 'vertical';
             newWidget.targets = [{
@@ -100,7 +147,6 @@ const ComponentSettings = ({ config, updateConfig, styles, loadIcon, preloadWidg
         return newWidget;
     }, []);
 
-    // 使用拖拽排序 Hook：管理组件的拖拽排序功能
     const {
         draggingIndex,
         dragOverIndex,
@@ -111,9 +157,6 @@ const ComponentSettings = ({ config, updateConfig, styles, loadIcon, preloadWidg
         handleDrop
     } = useDragAndDrop(config, updateConfig, setSelectedWidgetIndex, createWidget);
 
-    // ... existing hooks ...
-
-    // 使用长按拖拽 Hook：管理触摸设备上的长按拖拽功能
     const {
         isLongPressing,
         draggedRecently,
@@ -123,13 +166,10 @@ const ComponentSettings = ({ config, updateConfig, styles, loadIcon, preloadWidg
         handlePointerUp
     } = useLongPress(handleDragStart, handleDragOver, handleDrop);
 
-    // 预加载组件图标
-    useWidgetIcons(config.widgets, preloadWidgetIcons);
+    useWidgetIcons(config.widgets, preloadWidgetIcons!);
 
-    // 使用组件属性更新 Hook：管理组件属性的更新
     const { updateWidgetProperty } = useWidgetPropertyUpdate(config, updateConfig, selectedWidgetIndex);
 
-    // 获取组件预览组件
     const {
         LauncherItemPreview,
         VolumeWidgetPreview,
@@ -139,40 +179,33 @@ const ComponentSettings = ({ config, updateConfig, styles, loadIcon, preloadWidg
         ICCCeControlPreview
     } = useWidgetPreviews();
 
-    // 获取当前选中的组件
     const selectedWidget = selectedWidgetIndex !== null ? config.widgets[selectedWidgetIndex] : null;
 
-    // 包装组件点击处理函数，传入最近拖拽状态
-    const handleWidgetClickWrapper = (e, index) => {
+    const handleWidgetClickWrapper = (e: React.MouseEvent, index: number, draggedRecently: boolean): void => {
         handleWidgetClick(e, index, draggedRecently);
     };
 
-    // 左右面板宽度比例状态
     const [leftWidth, setLeftWidth] = useState(50);
-    // 调整器拖拽状态
     const [isDragging, setIsDragging] = useState(false);
-    // 容器引用
-    const containerRef = useRef(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
-    // 处理调整器鼠标按下事件：开始拖拽调整面板宽度
-    const handleResizerMouseDown = useCallback((e) => {
+    const handleResizerMouseDown = useCallback((e: React.MouseEvent | React.TouchEvent) => {
         e.preventDefault();
         setIsDragging(true);
         document.body.style.cursor = 'col-resize';
         document.body.style.userSelect = 'none';
     }, []);
 
-    // 处理调整器鼠标移动事件：更新面板宽度
-    const handleResizerMouseMove = useCallback((e) => {
+    const handleResizerMouseMove = useCallback((e: MouseEvent | TouchEvent) => {
         if (!isDragging || !containerRef.current) return;
 
         const containerRect = containerRef.current.getBoundingClientRect();
-        const newLeftWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+        const clientX = 'clientX' in e ? e.clientX : e.touches[0].clientX;
+        const newLeftWidth = ((clientX - containerRect.left) / containerRect.width) * 100;
         const clampedWidth = Math.max(20, Math.min(80, newLeftWidth));
         setLeftWidth(clampedWidth);
     }, [isDragging]);
 
-    // 处理调整器鼠标抬起事件：结束拖拽
     const handleResizerMouseUp = useCallback(() => {
         if (isDragging) {
             setIsDragging(false);
@@ -181,42 +214,38 @@ const ComponentSettings = ({ config, updateConfig, styles, loadIcon, preloadWidg
         }
     }, [isDragging]);
 
-    // 监听拖拽状态，添加或移除全局事件监听器
     useEffect(() => {
         if (isDragging) {
             window.addEventListener('mousemove', handleResizerMouseMove);
             window.addEventListener('mouseup', handleResizerMouseUp);
-            window.addEventListener('touchmove', handleResizerMouseMove);
+            window.addEventListener('touchmove', handleResizerMouseMove as EventListener);
             window.addEventListener('touchend', handleResizerMouseUp);
         } else {
             window.removeEventListener('mousemove', handleResizerMouseMove);
             window.removeEventListener('mouseup', handleResizerMouseUp);
-            window.removeEventListener('touchmove', handleResizerMouseMove);
+            window.removeEventListener('touchmove', handleResizerMouseMove as EventListener);
             window.removeEventListener('touchend', handleResizerMouseUp);
         }
 
         return () => {
             window.removeEventListener('mousemove', handleResizerMouseMove);
             window.removeEventListener('mouseup', handleResizerMouseUp);
-            window.removeEventListener('touchmove', handleResizerMouseMove);
+            window.removeEventListener('touchmove', handleResizerMouseMove as EventListener);
             window.removeEventListener('touchend', handleResizerMouseUp);
         };
     }, [isDragging, handleResizerMouseMove, handleResizerMouseUp]);
 
-    // 撤销删除相关状态
-    const [deletedWidget, setDeletedWidget] = useState(null);
-    const [deletedWidgetIndex, setDeletedWidgetIndex] = useState(null);
+    const [deletedWidget, setDeletedWidget] = useState<Widget | null>(null);
+    const [deletedWidgetIndex, setDeletedWidgetIndex] = useState<number | null>(null);
     const [showUndoNotification, setShowUndoNotification] = useState(false);
-    const undoTimerRef = useRef(null);
+    const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // 删除组件处理函数
-    const handleDeleteWidget = (index) => {
+    const handleDeleteWidget = (index: number): void => {
         const widgetToDelete = config.widgets[index];
         setDeletedWidget(widgetToDelete);
         setDeletedWidgetIndex(index);
         setShowUndoNotification(true);
 
-        // 设置5秒倒计时
         if (undoTimerRef.current) {
             clearTimeout(undoTimerRef.current);
         }
@@ -233,16 +262,14 @@ const ComponentSettings = ({ config, updateConfig, styles, loadIcon, preloadWidg
             widgets: newWidgets
         });
 
-        // 如果删除的是当前选中的组件，或者是该组件之前的组件，需要更新选中状态
         if (selectedWidgetIndex === index) {
             clearSelection();
-        } else if (selectedWidgetIndex > index) {
+        } else if (selectedWidgetIndex !== null && selectedWidgetIndex > index) {
             setSelectedWidgetIndex(selectedWidgetIndex - 1);
         }
     };
 
-    // 撤销删除函数
-    const handleUndoDelete = () => {
+    const handleUndoDelete = (): void => {
         if (!deletedWidget || deletedWidgetIndex === null) return;
 
         const newWidgets = [...config.widgets];
@@ -253,10 +280,6 @@ const ComponentSettings = ({ config, updateConfig, styles, loadIcon, preloadWidg
             widgets: newWidgets
         });
 
-        // 恢复选中状态（可选，如果用户还在当前页面可能会比较友好）
-        // setSelectedWidgetIndex(deletedWidgetIndex);
-
-        // 清除状态
         setShowUndoNotification(false);
         setDeletedWidget(null);
         setDeletedWidgetIndex(null);
@@ -265,8 +288,7 @@ const ComponentSettings = ({ config, updateConfig, styles, loadIcon, preloadWidg
         }
     };
 
-    // 添加新组件
-    const handleAddComponent = (type) => {
+    const handleAddComponent = (type: string): void => {
         const newWidget = createWidget(type);
         const newWidgets = [...config.widgets, newWidget];
         updateConfig({
@@ -274,7 +296,6 @@ const ComponentSettings = ({ config, updateConfig, styles, loadIcon, preloadWidg
             widgets: newWidgets
         });
 
-        // 选中新添加的组件
         setSelectedWidgetIndex(newWidgets.length - 1);
     };
 
@@ -286,12 +307,10 @@ const ComponentSettings = ({ config, updateConfig, styles, loadIcon, preloadWidg
             </div>
 
             <div className={styles.componentLayout} ref={containerRef}>
-                {/* 左侧预览面板 */}
                 <div className={styles.leftPanel} style={{ width: `calc(${leftWidth}% - 12px)`, transition: isDragging ? 'none' : 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}>
                     <PreviewPanel
                         config={config}
                         styles={styles}
-
                         isLongPressing={isLongPressing}
                         draggingIndex={draggingIndex}
                         dragOverIndex={dragOverIndex}
@@ -317,7 +336,6 @@ const ComponentSettings = ({ config, updateConfig, styles, loadIcon, preloadWidg
                     />
                 </div>
 
-                {/* 面板宽度调整器 */}
                 <div
                     className={styles.resizer}
                     onMouseDown={handleResizerMouseDown}
@@ -328,7 +346,6 @@ const ComponentSettings = ({ config, updateConfig, styles, loadIcon, preloadWidg
                     }}
                 />
 
-                {/* 右侧属性面板 */}
                 <div className={styles.rightPanel} style={{ width: `calc(${100 - leftWidth}% - 95px)`, transition: isDragging ? 'none' : 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}>
                     <PropertiesPanel
                         config={config}
@@ -344,7 +361,6 @@ const ComponentSettings = ({ config, updateConfig, styles, loadIcon, preloadWidg
                     />
                 </div>
             </div>
-            {/* 撤销删除通知横幅 */}
             {showUndoNotification && (
                 <div style={{
                     position: 'absolute',

@@ -1,20 +1,41 @@
-/**
- * 辅助工具设置组件
- * 提供一些辅助性的功能设置
- * @param {Object} config - 配置对象
- * @param {Function} updateConfig - 更新配置的回调函数
- * @param {Object} styles - 样式对象
- */
-
 import React from 'react';
 import Card from '@mui/joy/Card';
 import Switch from '@mui/joy/Switch';
 
-const HelperSettings = ({ config, updateConfig, styles }) => {
+interface HelperTools {
+    auto_kill_similar?: boolean;
+    auto_kill_timer?: boolean;
+    icc_compatibility?: boolean;
+}
+
+interface Config {
+    helper_tools?: HelperTools;
+}
+
+interface Styles {
+    section: string;
+    sectionHeader: string;
+    title: string;
+    description: string;
+    groupTitle: string;
+    card: string;
+    formGroup: string;
+    switchRow: string;
+    label: string;
+    helpText: string;
+}
+
+interface HelperSettingsProps {
+    config: Config;
+    updateConfig: (config: Config) => void;
+    styles: Styles;
+}
+
+const HelperSettings: React.FC<HelperSettingsProps> = ({ config, updateConfig, styles }) => {
     const helperTools = config.helper_tools || {};
 
-    const handleToggle = async (key, value) => {
-        const newConfig = {
+    const handleToggle = async (key: string, value: boolean): Promise<void> => {
+        const newConfig: Config = {
             ...config,
             helper_tools: {
                 ...helperTools,

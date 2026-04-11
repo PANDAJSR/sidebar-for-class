@@ -1,22 +1,43 @@
-/**
- * 计时器设置组件
- * 提供计时器相关的配置选项
- * @param {Object} config - 配置对象
- * @param {Function} updateConfig - 更新配置的回调函数
- * @param {Object} styles - 样式对象
- */
-
 import React from 'react';
 import Card from '@mui/joy/Card';
 import Switch from '@mui/joy/Switch';
 import Select from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
 
-const TimerSettings = ({ config, updateConfig, styles }) => {
+interface TimerConfig {
+    auto_hide_seconds?: number;
+    enable_animations?: boolean | string;
+    enable_sound?: boolean;
+}
+
+interface Config {
+    timer?: TimerConfig;
+}
+
+interface Styles {
+    section: string;
+    sectionHeader: string;
+    title: string;
+    description: string;
+    groupTitle: string;
+    card: string;
+    formGroup: string;
+    label: string;
+    switchRow: string;
+    helpText: string;
+}
+
+interface TimerSettingsProps {
+    config: Config;
+    updateConfig: (config: Config) => void;
+    styles: Styles;
+}
+
+const TimerSettings: React.FC<TimerSettingsProps> = ({ config, updateConfig, styles }) => {
     const timerConfig = config.timer || {};
 
-    const handleAutoHideChange = (value) => {
-        const newConfig = {
+    const handleAutoHideChange = (value: number): void => {
+        const newConfig: Config = {
             ...config,
             timer: {
                 ...timerConfig,
@@ -26,8 +47,8 @@ const TimerSettings = ({ config, updateConfig, styles }) => {
         updateConfig(newConfig);
     };
 
-    const handleAnimationsChange = (value) => {
-        const newConfig = {
+    const handleAnimationsChange = (value: string): void => {
+        const newConfig: Config = {
             ...config,
             timer: {
                 ...timerConfig,
@@ -37,8 +58,8 @@ const TimerSettings = ({ config, updateConfig, styles }) => {
         updateConfig(newConfig);
     };
 
-    const handleSoundChange = (checked) => {
-        const newConfig = {
+    const handleSoundChange = (checked: boolean): void => {
+        const newConfig: Config = {
             ...config,
             timer: {
                 ...timerConfig,
@@ -63,7 +84,7 @@ const TimerSettings = ({ config, updateConfig, styles }) => {
 
     const currentAutoHide = timerConfig.auto_hide_seconds || 0;
 
-    let animationValue = timerConfig.enable_animations;
+    let animationValue: string = timerConfig.enable_animations as string || 'on';
     if (typeof animationValue === 'boolean') {
         animationValue = animationValue ? 'on' : 'off';
     } else if (!animationValue) {
@@ -83,7 +104,7 @@ const TimerSettings = ({ config, updateConfig, styles }) => {
                     <div className={styles.label}>自动收起至迷你模式</div>
                     <Select
                         value={currentAutoHide}
-                        onChange={(_, value) => handleAutoHideChange(value)}
+                        onChange={(_, value) => handleAutoHideChange(value as number)}
                         sx={{ width: 120 }}
                     >
                         {options.map((option) => (
@@ -102,7 +123,7 @@ const TimerSettings = ({ config, updateConfig, styles }) => {
                     <div className={styles.label}>启用动画</div>
                     <Select
                         value={animationValue}
-                        onChange={(_, value) => handleAnimationsChange(value)}
+                        onChange={(_, value) => handleAnimationsChange(value as string)}
                         sx={{ width: 120 }}
                     >
                         {animationOptions.map((option) => (

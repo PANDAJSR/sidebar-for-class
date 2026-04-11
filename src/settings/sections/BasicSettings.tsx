@@ -1,16 +1,28 @@
-/**
- * 基本设置组件
- * 显示应用程序的基本设置选项
- * @param {Object} config - 配置对象
- * @param {Function} updateConfig - 更新配置的回调函数
- * @param {Object} styles - 样式对象
- */
-
 import React from 'react';
 import Card from '@mui/joy/Card';
 import Typography from '@mui/joy/Typography';
 
-const BasicSettings = ({ config, updateConfig, styles }) => {
+interface Config {
+    [key: string]: unknown;
+}
+
+interface Styles {
+    section: string;
+    sectionHeader: string;
+    title: string;
+    description: string;
+    groupTitle: string;
+    card: string;
+    formGroup: string;
+}
+
+interface BasicSettingsProps {
+    config: Config;
+    updateConfig: (config: Config) => void;
+    styles: Styles;
+}
+
+const BasicSettings: React.FC<BasicSettingsProps> = ({ config, updateConfig, styles }) => {
     return (
         <div className={styles.section}>
             <div className={styles.sectionHeader}>

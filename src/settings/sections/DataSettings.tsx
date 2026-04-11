@@ -1,9 +1,4 @@
-/**
- * 数据管理设置组件
- * 管理 data 目录下的所有文件
- */
-
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Card from '@mui/joy/Card';
 import Button from '@mui/joy/Button';
 import IconButton from '@mui/joy/IconButton';
@@ -26,8 +21,40 @@ import CreateScriptModal from '../components/CreateScriptModal';
 import RenameFileModal from '../components/RenameFileModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 
-const DataSettings = ({ config, updateConfig, styles }) => {
-    const [files, setFiles] = useState([]);
+interface AutomaticTask {
+    name?: string;
+    script?: string;
+}
+
+interface Config {
+    automatic?: AutomaticTask[];
+}
+
+interface FileInfo {
+    name: string;
+    mtime: Date | string;
+}
+
+interface Styles {
+    section: string;
+    sectionHeader: string;
+    title: string;
+    description: string;
+    groupTitle: string;
+    card: string;
+    formGroup: string;
+    label: string;
+    helpText: string;
+}
+
+interface DataSettingsProps {
+    config: Config;
+    updateConfig: (config: Config) => void;
+    styles: Styles;
+}
+
+const DataSettings: React.FC<DataSettingsProps> = ({ config, updateConfig, styles }) => {
+    const [files, setFiles] = useState<FileInfo[]>([]);
     const [loading, setLoading] = useState(false);
     const [editorOpen, setEditorOpen] = useState(false);
     const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -37,8 +64,8 @@ const DataSettings = ({ config, updateConfig, styles }) => {
     const [fileToRename, setFileToRename] = useState('');
     const [fileToDelete, setFileToDelete] = useState('');
 
-    const scriptToTasks = React.useMemo(() => {
-        const map = new Map();
+    const scriptToTasks = useMemo(() => {
+        const map = new Map<string, string[]>();
         if (!config || !config.automatic) return map;
         
         config.automatic.forEach((task, index) => {
@@ -67,7 +94,7 @@ const DataSettings = ({ config, updateConfig, styles }) => {
         fetchFiles();
     }, [fetchFiles]);
 
-    const handleCreateFile = async (filename) => {
+    const handleCreateFile = async (filename: string): Promise<void> => {
         try {
             await window.electronAPI.writeFile(filename, '');
             await fetchFiles();
@@ -78,12 +105,12 @@ const DataSettings = ({ config, updateConfig, styles }) => {
         }
     };
 
-    const handleDeleteFile = (filename) => {
+    const handleDeleteFile = (filename: string): void => {
         setFileToDelete(filename);
         setConfirmOpen(true);
     };
 
-    const onDeleteConfirm = async () => {
+    const onDeleteConfirm = async (): Promise<void> => {
         try {
             await window.electronAPI.deleteFile(fileToDelete);
             await fetchFiles();
@@ -92,16 +119,16 @@ const DataSettings = ({ config, updateConfig, styles }) => {
         }
     };
 
-    const handleRenameFile = (filename) => {
+    const handleRenameFile = (filename: string): void => {
         setFileToRename(filename);
         setRenameModalOpen(true);
     };
 
-    const onRenameConfirm = async (oldName, newName) => {
+    const onRenameConfirm = async (oldName: string, newName: string): Promise<void> => {
         try {
             await window.electronAPI.renameFile(oldName, newName);
             
-            if (scriptToTasks.has(oldName)) {
+            if (scriptToTasks.has(oldName) && config.automatic) {
                 const newAutomatic = config.automatic.map(task => {
                     if (task.script === oldName) {
                         return { ...task, script: newName };
@@ -120,15 +147,15 @@ const DataSettings = ({ config, updateConfig, styles }) => {
         }
     };
 
-    const formatDate = (date) => {
+    const formatDate = (date: Date | string): string => {
         return new Date(date).toLocaleString();
     };
 
-    const getFileBadge = (filename) => {
-        const ext = filename.split('.').pop().toLowerCase();
-        const badges = [];
+    const getFileBadge = (filename: string): React.ReactNode => {
+        const ext = filename.split('.').pop()?.toLowerCase() || '';
+        const badges: React.ReactNode[] = [];
 
-        let chipColor = 'neutral';
+        let chipColor: 'neutral' | 'primary' | 'success' | 'danger' | 'info' = 'neutral';
         switch (ext) {
             case 'js': chipColor = 'primary'; break;
             case 'json': chipColor = 'success'; break;
@@ -155,7 +182,7 @@ const DataSettings = ({ config, updateConfig, styles }) => {
         if (scriptToTasks.has(filename)) {
             const tasks = scriptToTasks.get(filename);
             badges.push(
-                <Tooltip key="auto" title={`此脚本已被自动化任务使用: ${tasks.join('、')}`}>
+                <Tooltip key="auto" title={`此脚本已被自动化任务使用: ${tasks?.join('、')}`}>
                     <Chip variant="soft" size="sm" color="info" startDecorator={<BotRegular />}>
                         自动化引用
                     </Chip>

@@ -1,11 +1,3 @@
-/**
- * 自动化设置组件
- * 管理自动执行的脚本和任务
- * @param {Object} config - 配置对象
- * @param {Function} updateConfig - 更新配置的回调函数
- * @param {Object} styles - 样式对象
- */
-
 import { useState, useEffect } from 'react';
 import Card from '@mui/joy/Card';
 import FormControl from '@mui/joy/FormControl';
@@ -25,15 +17,43 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ScriptEditorModal from '../components/ScriptEditorModal';
 import CreateScriptModal from '../components/CreateScriptModal';
 
-const AutomationSettings = ({ config, updateConfig, styles }) => {
+interface AutomaticTask {
+    name: string;
+    on: string[];
+    script: string;
+}
+
+interface Config {
+    automatic?: AutomaticTask[];
+}
+
+interface Styles {
+    section: string;
+    sectionHeader: string;
+    title: string;
+    description: string;
+    groupTitle: string;
+    card: string;
+    formGroup: string;
+    label: string;
+    helpText: string;
+}
+
+interface AutomationSettingsProps {
+    config: Config;
+    updateConfig: (config: Config) => void;
+    styles: Styles;
+}
+
+const AutomationSettings: React.FC<AutomationSettingsProps> = ({ config, updateConfig, styles }) => {
     const automatic = config.automatic || [];
     const [editorOpen, setEditorOpen] = useState(false);
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [currentScriptIndex, setCurrentScriptIndex] = useState(-1);
-    const [existingScripts, setExistingScripts] = useState([]);
-    const [dropdownOpen, setDropdownOpen] = useState({});
+    const [existingScripts, setExistingScripts] = useState<string[]>([]);
+    const [dropdownOpen, setDropdownOpen] = useState<Record<string, boolean>>({});
 
-    const fetchScripts = async () => {
+    const fetchScripts = async (): Promise<void> => {
         try {
             const files = await window.electronAPI.getFilesInFolder('.', 100);
             const scriptExtensions = ['.bat', '.cmd', '.js', '.ps1', '.py', '.sh'];
@@ -50,8 +70,8 @@ const AutomationSettings = ({ config, updateConfig, styles }) => {
         fetchScripts();
     }, []);
 
-    const handleAddTask = () => {
-        const newTask = {
+    const handleAddTask = (): void => {
+        const newTask: AutomaticTask = {
             name: '',
             on: ['startup'],
             script: ''
@@ -62,7 +82,7 @@ const AutomationSettings = ({ config, updateConfig, styles }) => {
         });
     };
 
-    const handleDeleteTask = (index) => {
+    const handleDeleteTask = (index: number): void => {
         const newAutomatic = automatic.filter((_, i) => i !== index);
         updateConfig({
             ...config,
@@ -70,7 +90,7 @@ const AutomationSettings = ({ config, updateConfig, styles }) => {
         });
     };
 
-    const handleUpdateTask = (index, field, value) => {
+    const handleUpdateTask = (index: number, field: string, value: string | string[]): void => {
         const newAutomatic = automatic.map((task, i) => {
             if (i === index) {
                 return { ...task, [field]: value };
@@ -83,10 +103,10 @@ const AutomationSettings = ({ config, updateConfig, styles }) => {
         });
     };
 
-    const handleToggleOn = (index, condition) => {
+    const handleToggleOn = (index: number, condition: string): void => {
         const task = automatic[index];
         const currentOn = task.on || [];
-        let newOn;
+        let newOn: string[];
         if (currentOn.includes(condition)) {
             newOn = currentOn.filter(c => c !== condition);
         } else {
@@ -95,7 +115,7 @@ const AutomationSettings = ({ config, updateConfig, styles }) => {
         handleUpdateTask(index, 'on', newOn);
     };
 
-    const handleCreateScript = (filename) => {
+    const handleCreateScript = (filename: string): void => {
         handleUpdateTask(currentScriptIndex, 'script', filename);
         fetchScripts();
         setTimeout(() => {
@@ -173,7 +193,7 @@ const AutomationSettings = ({ config, updateConfig, styles }) => {
                                             <FormControl sx={{ mt: 1 }}>
                                                 <Select
                                                     value=""
-                                                    onChange={(_, value) => handleUpdateTask(index, 'script', value)}
+                                                    onChange={(_, value) => handleUpdateTask(index, 'script', value as string)}
                                                     placeholder="选择已有脚本"
                                                     startDecorator={<ArrowDropDownIcon />}
                                                 >
