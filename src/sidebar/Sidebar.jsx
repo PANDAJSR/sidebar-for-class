@@ -83,11 +83,6 @@ const Sidebar = () => {
 
     // 7. 事件处理函数
 
-    const handleSettingsClick = (e) => {
-        e.stopPropagation();
-        window.electronAPI.openSettings();
-    };
-
     const handleScreenshot = async () => {
         try {
             if (isExpanded) {
@@ -119,10 +114,8 @@ const Sidebar = () => {
             onClick={handleWrapperClick}
         >
             <div id="sidebar" ref={sidebarRef} className={isEdgeTabStyle ? 'edge-tab-style' : ''}>
+                <div id="corner-settings" onDoubleClick={() => window.electronAPI?.openSettings()}></div>
                 <div id="content">
-                    <button id="settings-btn" className="settings-button" title="设置" onClick={handleSettingsClick}>
-                        <i className="fas fa-cog"></i>
-                    </button>
                     <div id="widget-container" className="widget-list">
                         {config?.widgets?.map((widget, index) => {
                             if (widget.type === 'launcher') {
