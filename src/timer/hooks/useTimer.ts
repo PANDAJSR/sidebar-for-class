@@ -1,43 +1,57 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-/**
- * 计时器核心逻辑 Hook
- * 管理倒计时/正计时的状态、时间计算和结束处理
- *
- * @param {Object} options - 配置选项
- * @param {boolean} options.enableSound - 是否启用结束音效
- * @param {Function} options.exitFullScreen - 退出全屏的函数
- * @param {Function} options.toggleMiniMode - 切换迷你模式的函数
- * @returns {Object} 计时器相关的状态和操作函数
- */
-export const useTimer = ({ enableSound, exitFullScreen, toggleMiniMode }) => {
-  // 初始时间（秒）
-  const [initialTime, setInitialTime] = useState(5 * 60);
-  // 当前时间（秒）
-  const [timeInSeconds, setTimeInSeconds] = useState(initialTime);
-  // 是否正在运行
-  const [isRunning, setIsRunning] = useState(false);
-  // 计时模式：'countdown' 倒计时 | 'countup' 正计时
-  const [mode, setMode] = useState('countdown');
+type TimerMode = 'countdown' | 'countup';
 
-  // 定时器引用
-  const timerRef = useRef(null);
-  // 开始时间引用（用于精确计算）
-  const startTimeRef = useRef(null);
-  // 已计时时长引用（用于暂停后继续）
-  const elapsedTimeRef = useRef(0);
-  // 音频对象引用
-  const audioRef = useRef(new Audio('/TimerDownNotice.wav'));
-  // 迷你模式状态引用（用于在定时器中读取最新值）
-  const isMiniModeRef = useRef(false);
+interface UseTimerOptions {
+  enableSound: boolean;
+  exitFullScreen: () => Promise<void>;
+  toggleMiniMode: () => Promise<void>;
+}
 
-  /**
-   * 格式化时间为数字组件所需的对象格式
-   *
-   * @param {number} totalSeconds - 总秒数
-   * @returns {Object} 包含各数位值的对象 { h1, h2, m1, m2, s1, s2 }
-   */
-  const formatTimeDigits = useCallback((totalSeconds) => {
+interface TimeDigits {
+  h1: string;
+  h2: string;
+  m1: string;
+  m2: string;
+  s1: string;
+  s2: string;
+}
+
+interface UseTimerReturn {
+  initialTime: number;
+  timeInSeconds: number;
+  isRunning: boolean;
+  mode: TimerMode;
+  isMiniModeRef: React.MutableRefObject<boolean>;
+  setInitialTime: React.Dispatch<React.SetStateAction<number>>;
+  setTimeInSeconds: React.Dispatch<React.SetStateAction<number>>;
+  setIsRunning: React.Dispatch<React.SetStateAction<boolean>>;
+  setMode: React.Dispatch<React.SetStateAction<TimerMode>>;
+  formatTimeDigits: (totalSeconds: number) => TimeDigits;
+  handleStartPause: () => void;
+  handleReset: () => void;
+  handleModeChange: (newMode: TimerMode) => void;
+  adjustTimeDigit: (type: 'h' | 'm' | 's', amount: number, multiplier: number) => void;
+  calculateProgress: () => number;
+}
+
+export const useTimer = ({
+  enableSound,
+  exitFullScreen,
+  toggleMiniMode,
+}: UseTimerOptions): UseTimerReturn => {
+  const [initialTime, setInitialTime] = useState<number>(5 * 60);
+  const [timeInSeconds, setTimeInSeconds] = useState<number>(initialTime);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [mode, setMode] = useState<TimerMode>('countdown');
+
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startTimeRef = useRef<number | null>(null);
+  const elapsedTimeRef = useRef<number>(0);
+  const audioRef = useRef<HTMLAudioElement>(new Audio('/TimerDownNotice.wav'));
+  const isMiniModeRef = useRef<boolean>(false);
+
+  const formatTimeDigits = useCallback((totalSeconds: number): TimeDigits => {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
@@ -47,63 +61,44 @@ export const useTimer = ({ enableSound, exitFullScreen, toggleMiniMode }) => {
     const s = String(seconds).padStart(2, '0');
 
     return {
-      h1: h[0], h2: h[1],
-      m1: m[0], m2: m[1],
-      s1: s[0], s2: s[1],
+      h1: h[0],
+      h2: h[1],
+      m1: m[0],
+      m2: m[1],
+      s1: s[0],
+      s2: s[1],
     };
   }, []);
 
-  /**
-   * 处理开始/暂停按钮点击
-   */
-  const handleStartPause = useCallback(() => {
+  const handleStartPause = useCallback((): void => {
     const nextIsRunning = !isRunning;
     if (nextIsRunning) {
-      // 开始计时：重置已计时时长
       elapsedTimeRef.current = 0;
     }
     setIsRunning(nextIsRunning);
-    // 暂停时退出全屏
     if (!nextIsRunning) {
       exitFullScreen();
     }
   }, [isRunning, exitFullScreen]);
 
-  /**
-   * 处理重置按钮点击
-   */
-  const handleReset = useCallback(() => {
+  const handleReset = useCallback((): void => {
     clearInterval(timerRef.current);
     setIsRunning(false);
     setTimeInSeconds(mode === 'countdown' ? initialTime : 0);
-    // 重置已计时时长
     elapsedTimeRef.current = 0;
     startTimeRef.current = null;
-    // 重置时退出全屏
     exitFullScreen();
   }, [mode, initialTime, exitFullScreen]);
 
-  /**
-   * 切换计时模式
-   *
-   * @param {string} newMode - 新模式 ('countdown' | 'countup')
-   */
-  const handleModeChange = useCallback((newMode) => {
-    if (isRunning) return; // 运行时不能切换模式
+  const handleModeChange = useCallback((newMode: TimerMode): void => {
+    if (isRunning) return;
     setMode(newMode);
     setTimeInSeconds(newMode === 'countdown' ? initialTime : 0);
   }, [isRunning, initialTime]);
 
-  /**
-   * 调整时间数字
-   *
-   * @param {string} type - 调整类型 ('h' 小时 | 'm' 分钟 | 's' 秒)
-   * @param {number} amount - 调整量 (+1 或 -1)
-   * @param {number} multiplier - 倍数 (用于十位调整)
-   */
-  const adjustTimeDigit = useCallback((type, amount, multiplier) => {
+  const adjustTimeDigit = useCallback((type: 'h' | 'm' | 's', amount: number, multiplier: number): void => {
     const totalAdjustment = amount * multiplier;
-    setTimeInSeconds((prevTime) => {
+    setTimeInSeconds((prevTime: number) => {
       let hours = Math.floor(prevTime / 3600);
       let minutes = Math.floor((prevTime % 3600) / 60);
       let seconds = prevTime % 60;
@@ -131,56 +126,42 @@ export const useTimer = ({ enableSound, exitFullScreen, toggleMiniMode }) => {
     });
   }, [mode]);
 
-  /**
-   * 计算进度条百分比
-   *
-   * @returns {number} 进度百分比 (0-100)
-   */
-  const calculateProgress = useCallback(() => {
+  const calculateProgress = useCallback((): number => {
     if (mode === 'countdown') {
       if (initialTime === 0) return 0;
       return ((initialTime - timeInSeconds) / initialTime) * 100;
     } else {
-      // 正计时模式：以60分钟为满进度，超过则保持100%
-      const maxTime = 60 * 60; // 60分钟
+      const maxTime = 60 * 60;
       return Math.min((timeInSeconds / maxTime) * 100, 100);
     }
   }, [mode, initialTime, timeInSeconds]);
 
-  // 计时器核心逻辑
   useEffect(() => {
     if (isRunning) {
-      // 恢复时重新记录开始时间
       startTimeRef.current = Date.now();
 
       timerRef.current = setInterval(() => {
         const now = Date.now();
-        const deltaSeconds = Math.floor((now - startTimeRef.current) / 1000);
+        const deltaSeconds = Math.floor((now - (startTimeRef.current || now)) / 1000);
 
         if (deltaSeconds > 0) {
-          // 更新已计时时长
           elapsedTimeRef.current += deltaSeconds;
-          // 重新记录开始时间，保留余数毫秒以保证精度
-          startTimeRef.current = now - ((now - startTimeRef.current) % 1000);
+          startTimeRef.current = now - ((now - (startTimeRef.current || now)) % 1000);
 
-          setTimeInSeconds((prevTime) => {
-            let newTime;
+          setTimeInSeconds((prevTime: number) => {
+            let newTime: number;
             if (mode === 'countdown') {
               newTime = Math.max(0, prevTime - deltaSeconds);
             } else {
               newTime = prevTime + deltaSeconds;
             }
 
-            // 检查是否结束（倒计时到0）
             if (mode === 'countdown' && newTime === 0 && prevTime > 0) {
-              // 倒计时结束，停止计时
               setIsRunning(false);
-              // 播放提示音
               if (enableSound && audioRef.current) {
                 audioRef.current.currentTime = 0;
                 audioRef.current.play().catch(err => console.log('Audio play failed:', err));
               }
-              // 退出迷你模式和全屏
               if (isMiniModeRef.current) {
                 toggleMiniMode();
               }
@@ -190,13 +171,12 @@ export const useTimer = ({ enableSound, exitFullScreen, toggleMiniMode }) => {
             return newTime;
           });
         }
-      }, 100); // 每100ms检查一次，保证精度
+      }, 100);
     }
 
     return () => clearInterval(timerRef.current);
   }, [isRunning, mode, enableSound, exitFullScreen, toggleMiniMode]);
 
-  // 根据运行状态添加/移除 body 类名
   useEffect(() => {
     if (isRunning) {
       document.body.classList.add('timer-running');
@@ -206,20 +186,15 @@ export const useTimer = ({ enableSound, exitFullScreen, toggleMiniMode }) => {
   }, [isRunning]);
 
   return {
-    // 状态
     initialTime,
     timeInSeconds,
     isRunning,
     mode,
     isMiniModeRef,
-
-    // 设置函数
     setInitialTime,
     setTimeInSeconds,
     setIsRunning,
     setMode,
-
-    // 操作函数
     formatTimeDigits,
     handleStartPause,
     handleReset,
