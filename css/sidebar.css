@@ -125,7 +125,8 @@
     position: absolute;
     --edge-tab-visible-width: 14px;
     --edge-tab-arrow-size: 8px;
-    right: calc((var(--edge-tab-visible-width) - var(--edge-tab-arrow-size)) / 2);
+    --edge-tab-arrow-optical-offset: 2px;
+    right: calc((var(--edge-tab-visible-width) - var(--edge-tab-arrow-size)) / 2 + var(--edge-tab-arrow-optical-offset));
     top: 50%;
     width: var(--edge-tab-arrow-size);
     height: var(--edge-tab-arrow-size);
