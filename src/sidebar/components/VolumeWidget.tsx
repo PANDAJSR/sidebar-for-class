@@ -1,17 +1,22 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const VolumeWidget = ({ range, isPreview = false }) => {
+interface VolumeWidgetProps {
+    range?: [number, number];
+    isPreview?: boolean;
+}
+
+const VolumeWidget: React.FC<VolumeWidgetProps> = ({ range, isPreview = false }) => {
     const [volume, setVolume] = useState(0);
     const min = range ? range[0] : 0;
     const max = range ? range[1] : 100;
 
     useEffect(() => {
         window.electronAPI.getVolume()
-            .then((vol) => setVolume(vol))
-            .catch((err) => console.error('获取音量失败:', err));
+            .then((vol: number) => setVolume(vol))
+            .catch((err: Error) => console.error('获取音量失败:', err));
     }, []);
 
-    const handleVolumeChange = (e) => {
+    const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = parseInt(e.target.value, 10);
         setVolume(val);
 

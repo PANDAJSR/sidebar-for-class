@@ -1,8 +1,36 @@
-import { useEffect } from 'react';
+import { useEffect, RefObject, MouseEvent } from 'react';
 
-const useSidebarMouseIgnore = (isExpanded, sidebarRef, wrapperRef, draggingState, animationIdRef, setIgnoreMouse) => {
+interface DraggingState {
+    isDragging: boolean;
+    isSwipeActive: boolean;
+    startX: number;
+    lastX: number;
+    lastTime: number;
+    startTimeStamp: number;
+    currentVelocity: number;
+    lastIgnoreState: boolean | null;
+    lastResizeTime: number;
+}
+
+interface UseSidebarMouseIgnoreParams {
+    isExpanded: boolean;
+    sidebarRef: RefObject<HTMLElement | null>;
+    wrapperRef: RefObject<HTMLElement | null>;
+    draggingState: RefObject<DraggingState>;
+    animationIdRef: RefObject<number | null>;
+    setIgnoreMouse: (ignore: boolean) => void;
+}
+
+const useSidebarMouseIgnore = (
+    isExpanded: boolean,
+    sidebarRef: RefObject<HTMLElement | null>,
+    wrapperRef: RefObject<HTMLElement | null>,
+    draggingState: RefObject<DraggingState>,
+    animationIdRef: RefObject<number | null>,
+    setIgnoreMouse: (ignore: boolean) => void
+) => {
     useEffect(() => {
-        const onMouseMove = (e) => {
+        const onMouseMove = (e: MouseEvent) => {
             const ds = draggingState.current;
             if (ds.isDragging || animationIdRef.current) {
                 setIgnoreMouse(false);
@@ -20,7 +48,6 @@ const useSidebarMouseIgnore = (isExpanded, sidebarRef, wrapperRef, draggingState
             } else {
                 if (sidebarRef.current) {
                     const rect = sidebarRef.current.getBoundingClientRect();
-                    // 允许左右各有 6px 的额外触发区域
                     if (e.clientX >= rect.left - 6 && e.clientX <= rect.right + 6 && e.clientY >= rect.top && e.clientY <= rect.bottom) {
                         shouldIgnore = false;
                     }
@@ -31,11 +58,11 @@ const useSidebarMouseIgnore = (isExpanded, sidebarRef, wrapperRef, draggingState
 
         const onMouseLeave = () => setIgnoreMouse(true);
 
-        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mousemove', onMouseMove as EventListener);
         window.addEventListener('mouseleave', onMouseLeave);
 
         return () => {
-            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mousemove', onMouseMove as EventListener);
             window.removeEventListener('mouseleave', onMouseLeave);
         };
     }, [isExpanded, sidebarRef, wrapperRef, draggingState, animationIdRef, setIgnoreMouse]);

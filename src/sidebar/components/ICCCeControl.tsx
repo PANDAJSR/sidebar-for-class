@@ -1,24 +1,19 @@
-/**
- * ICC-CE 控制组件
- * 提供 ICC 相关的快速控制功能
- * @param {Array<string>} functions - 功能名称数组
- * @param {boolean} isExpanded - 侧边栏是否展开
- * @param {Function} collapse - 收起侧边栏的函数
- * @param {boolean} isPreview - 是否为预览模式
- */
 import React from 'react';
 
-const ICCCEControl = ({ functions = [], isExpanded, collapse, isPreview = false }) => {
+interface ICCCeControlProps {
+    functions?: string[];
+    isExpanded?: boolean;
+    collapse?: () => void;
+    isPreview?: boolean;
+}
+
+const ICCCeControl: React.FC<ICCCeControlProps> = ({ functions = [], isExpanded, collapse, isPreview = false }) => {
     const columns = Math.min(Math.max(functions.length, 1), 5);
 
-    /**
-     * 处理功能按钮点击事件
-     * @param {string} func - 功能名称
-     */
-    const handleFuncClick = async (func) => {
+    const handleFuncClick = async (func: string) => {
         if (isPreview) return;
 
-        const uriMap = {
+        const uriMap: Record<string, string> = {
             'randone': 'icc://randone',
             'rand': 'icc://rand',
             'timer': 'icc://timer',
@@ -29,10 +24,8 @@ const ICCCEControl = ({ functions = [], isExpanded, collapse, isPreview = false 
 
         const uri = uriMap[func];
         if (uri && window.electronAPI && window.electronAPI.launchApp) {
-            // 如果侧边栏是展开的，先收起
             if (isExpanded && collapse) {
                 collapse();
-                // 给一点动画缓冲时间
                 await new Promise(resolve => setTimeout(resolve, 200));
             }
             window.electronAPI.launchApp(uri, []);
@@ -41,13 +34,8 @@ const ICCCEControl = ({ functions = [], isExpanded, collapse, isPreview = false 
         }
     };
 
-    /**
-     * 获取功能对应的图标类名
-     * @param {string} func - 功能名称
-     * @returns {string} - FontAwesome 图标类名
-     */
-    const getFuncIcon = (func) => {
-        const iconMap = {
+    const getFuncIcon = (func: string): string => {
+        const iconMap: Record<string, string> = {
             'randone': 'fa-user-check',
             'rand': 'fa-users',
             'timer': 'fa-stopwatch',
@@ -57,13 +45,8 @@ const ICCCEControl = ({ functions = [], isExpanded, collapse, isPreview = false 
         return iconMap[func] || 'fa-cog';
     };
 
-    /**
-     * 获取功能对应的中文显示名称
-     * @param {string} func - 功能名称
-     * @returns {string} - 中文名称
-     */
-    const getFuncDisplayName = (func) => {
-        const nameMap = {
+    const getFuncDisplayName = (func: string): string => {
+        const nameMap: Record<string, string> = {
             'randone': '单次抽',
             'rand': '随机抽',
             'timer': '计时器',
@@ -97,4 +80,4 @@ const ICCCEControl = ({ functions = [], isExpanded, collapse, isPreview = false 
     );
 };
 
-export default ICCCEControl;
+export default ICCCeControl;

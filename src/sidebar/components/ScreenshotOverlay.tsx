@@ -1,30 +1,66 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
-    // 1. 状态定义
+interface ScreenshotPath {
+    path: string;
+    previews?: PreviewItem[];
+}
+
+interface PreviewItem {
+    preview: string;
+    label?: string;
+}
+
+interface ScreenshotOverlayProps {
+    screenshotPath: ScreenshotPath;
+    setScreenshotPath: (path: ScreenshotPath | null) => void;
+}
+
+interface CropRect {
+    top: number;
+    left: number;
+    right: number;
+    bottom: number;
+}
+
+interface ImgDragRef {
+    isDragging: boolean;
+    lastX: number;
+    lastY: number;
+}
+
+interface CropDragRef {
+    activeHandle: string | null;
+    startX: number;
+    startY: number;
+    startCrop: CropRect | null;
+}
+
+interface DrawRef {
+    isDrawing: boolean;
+    lastX: number;
+    lastY: number;
+}
+
+const ScreenshotOverlay: React.FC<ScreenshotOverlayProps> = ({ screenshotPath, setScreenshotPath }) => {
     const [activePreviewIndex, setActivePreviewIndex] = useState(0);
-    const [previews, setPreviews] = useState(screenshotPath.previews || []);
+    const [previews, setPreviews] = useState<PreviewItem[]>(screenshotPath.previews || []);
     const [isCopied, setIsCopied] = useState(false);
     const [isCropModified, setIsCropModified] = useState(false);
     const [isAnnotating, setIsAnnotating] = useState(false);
     const [imgScale, setImgScale] = useState(1);
     const [imgOffset, setImgOffset] = useState({ x: 0, y: 0 });
-    const [crop, setCrop] = useState({ top: 0, left: 0, right: 0, bottom: 0 });
+    const [crop, setCrop] = useState<CropRect>({ top: 0, left: 0, right: 0, bottom: 0 });
 
-    // 2. Refs 定义
-    const imgDragRef = useRef({ isDragging: false, lastX: 0, lastY: 0 });
-    const cropDragRef = useRef({ activeHandle: null, startX: 0, startY: 0, startCrop: null });
-    const drawRef = useRef({ isDrawing: false, lastX: 0, lastY: 0 });
-    const imgRef = useRef(null);
-    const containerRef = useRef(null);
-    const annotationCanvasRef = useRef(null);
+    const imgDragRef = useRef<ImgDragRef>({ isDragging: false, lastX: 0, lastY: 0 });
+    const cropDragRef = useRef<CropDragRef>({ activeHandle: null, startX: 0, startY: 0, startCrop: null });
+    const drawRef = useRef<DrawRef>({ isDrawing: false, lastX: 0, lastY: 0 });
+    const imgRef = useRef<HTMLImageElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const annotationCanvasRef = useRef<HTMLCanvasElement>(null);
 
-    // 获取当前预览图
     const currentPreview = previews[activePreviewIndex]?.preview;
 
-    // 监听截图数据变化，自动初始化裁剪区域
     useEffect(() => {
-        // 当 screenshotPath 变化时，重置预览数组
         setPreviews(screenshotPath.previews || []);
         setActivePreviewIndex(0);
         setImgScale(1);
@@ -34,13 +70,11 @@ const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
 
         if (annotationCanvasRef.current) {
             const ctx = annotationCanvasRef.current.getContext('2d');
-            ctx.clearRect(0, 0, annotationCanvasRef.current.width, annotationCanvasRef.current.height);
+            ctx?.clearRect(0, 0, annotationCanvasRef.current.width, annotationCanvasRef.current.height);
         }
     }, [screenshotPath]);
 
-    // 监听当前预览图变化，确保裁剪区域正确初始化
     useEffect(() => {
-        // 重置状态
         setImgScale(1);
         setImgOffset({ x: 0, y: 0 });
         setIsCropModified(false);
@@ -48,23 +82,19 @@ const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
 
         if (annotationCanvasRef.current) {
             const ctx = annotationCanvasRef.current.getContext('2d');
-            ctx.clearRect(0, 0, annotationCanvasRef.current.width, annotationCanvasRef.current.height);
+            ctx?.clearRect(0, 0, annotationCanvasRef.current.width, annotationCanvasRef.current.height);
         }
 
-        // 延迟初始化裁剪区域，确保图像和容器都已准备好
         const initTimer = setTimeout(() => {
-            // 如果图像已经加载（从缓存加载），直接初始化
             if (imgRef.current && imgRef.current.complete) {
                 console.log('Image already loaded from cache, initializing crop');
                 initializeCrop();
             }
-            // 否则等待 onLoad 事件触发
         }, 100);
 
         return () => clearTimeout(initTimer);
     }, [activePreviewIndex, currentPreview]);
 
-    // 3. 初始化裁剪区域
     const initializeCrop = () => {
         if (!imgRef.current || !containerRef.current) return;
         const img = imgRef.current;
@@ -73,7 +103,6 @@ const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
         const containerRect = container.getBoundingClientRect();
         const imgRect = img.getBoundingClientRect();
 
-        // 添加调试日志
         console.log('initializeCrop:', {
             containerWidth: containerRect.width,
             containerHeight: containerRect.height,
@@ -85,7 +114,6 @@ const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
 
         if (!imgRect.width || !imgRect.height || !containerRect.width || !containerRect.height) return;
 
-        // 使用图像实际显示位置和尺寸计算裁剪边界
         const leftPercent = ((imgRect.left - containerRect.left) / containerRect.width) * 100;
         const topPercent = ((imgRect.top - containerRect.top) / containerRect.height) * 100;
         const rightPercent = ((containerRect.right - imgRect.right) / containerRect.width) * 100;
@@ -100,15 +128,13 @@ const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
         setIsCropModified(false);
     };
 
-    // 4. 事件处理函数
-    const handleReset = (e) => {
+    const handleReset = (e?: React.MouseEvent) => {
         if (e) e.stopPropagation();
         setImgScale(1);
         setImgOffset({ x: 0, y: 0 });
         setIsCropModified(false);
         setIsAnnotating(false);
 
-        // 重置当前预览为初始状态
         const originalPreviews = screenshotPath.previews || [];
         if (originalPreviews[activePreviewIndex]) {
             const newPreviews = [...previews];
@@ -119,26 +145,22 @@ const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
 
         if (annotationCanvasRef.current) {
             const ctx = annotationCanvasRef.current.getContext('2d');
-            ctx.clearRect(0, 0, annotationCanvasRef.current.width, annotationCanvasRef.current.height);
+            ctx?.clearRect(0, 0, annotationCanvasRef.current.width, annotationCanvasRef.current.height);
         }
 
-        // 延迟初始化裁剪区域，确保图像已更新
         requestAnimationFrame(() => {
             initializeCrop();
-            // 再次检查，确保容器尺寸已计算
             setTimeout(initializeCrop, 100);
         });
     };
 
-    const handleDisplayChange = (index) => {
+    const handleDisplayChange = (index: number) => {
         if (index === activePreviewIndex) return;
-        // 切换显示器后，立即保存当前的预览图到文件（为了让"打开文件夹"和"复制"功能针对当前选择的图）
         window.electronAPI.saveEditedImage(screenshotPath.path, previews[index].preview);
-        // 切换预览图，useEffect 会处理状态重置和裁剪区域初始化
         setActivePreviewIndex(index);
     };
 
-    const handleDrawStart = (e) => {
+    const handleDrawStart = (e: React.PointerEvent) => {
         if (!isAnnotating || !annotationCanvasRef.current) return;
         e.stopPropagation();
         const rect = annotationCanvasRef.current.getBoundingClientRect();
@@ -152,6 +174,7 @@ const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
         };
         
         const ctx = annotationCanvasRef.current.getContext('2d');
+        if (!ctx) return;
         ctx.strokeStyle = 'red';
         ctx.lineWidth = 5;
         ctx.lineCap = 'round';
@@ -163,7 +186,7 @@ const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
         ctx.stroke();
     };
 
-    const handleDrawMove = (e) => {
+    const handleDrawMove = (e: React.PointerEvent) => {
         if (!drawRef.current.isDrawing || !annotationCanvasRef.current) return;
         e.stopPropagation();
         const rect = annotationCanvasRef.current.getBoundingClientRect();
@@ -173,6 +196,7 @@ const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
         const y = (e.clientY - rect.top) * scaleY;
         
         const ctx = annotationCanvasRef.current.getContext('2d');
+        if (!ctx) return;
         ctx.beginPath();
         ctx.moveTo(drawRef.current.lastX, drawRef.current.lastY);
         ctx.lineTo(x, y);
@@ -226,6 +250,7 @@ const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
         canvas.width = realWidth;
         canvas.height = realHeight;
         const ctx = canvas.getContext('2d');
+        if (!ctx) return;
         
         const tempImg = new Image();
         tempImg.onload = () => {
@@ -237,12 +262,10 @@ const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
 
             const newBase64 = canvas.toDataURL('image/png');
             
-            // 更新预览数组
             const newPreviews = [...previews];
             newPreviews[activePreviewIndex] = { ...newPreviews[activePreviewIndex], preview: newBase64 };
             setPreviews(newPreviews);
             
-            // 保存到文件
             window.electronAPI.saveEditedImage(screenshotPath.path, newBase64);
             
             setImgScale(1);
@@ -250,16 +273,15 @@ const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
             setIsCropModified(false);
             setIsAnnotating(false);
             
-            // 清除画布
             if (annotationCanvasRef.current) {
                 const ctx = annotationCanvasRef.current.getContext('2d');
-                ctx.clearRect(0, 0, annotationCanvasRef.current.width, annotationCanvasRef.current.height);
+                ctx?.clearRect(0, 0, annotationCanvasRef.current.width, annotationCanvasRef.current.height);
             }
         };
         tempImg.src = currentPreview;
     };
 
-    const handleCropStart = (e, handle) => {
+    const handleCropStart = (e: React.PointerEvent, handle: string) => {
         e.stopPropagation();
         cropDragRef.current = {
             activeHandle: handle,
@@ -267,14 +289,15 @@ const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
             startY: e.clientY,
             startCrop: { ...crop }
         };
-        e.currentTarget.setPointerCapture(e.pointerId);
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     };
 
-    const handleCropMove = (e) => {
+    const handleCropMove = (e: React.PointerEvent) => {
         const { activeHandle, startX, startY, startCrop } = cropDragRef.current;
-        if (!activeHandle) return;
+        if (!activeHandle || !startCrop) return;
         e.stopPropagation();
-        const container = e.currentTarget.closest('.screenshot-preview-container');
+        const container = (e.currentTarget as HTMLElement).closest('.screenshot-preview-container');
+        if (!container) return;
         const rect = container.getBoundingClientRect();
         const moveX = ((e.clientX - startX) / rect.width) * 100;
         const moveY = ((e.clientY - startY) / rect.height) * 100;
@@ -287,29 +310,29 @@ const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
         setIsCropModified(true);
     };
 
-    const handleCropUp = (e) => {
+    const handleCropUp = (e: React.PointerEvent) => {
         cropDragRef.current.activeHandle = null;
-        if (e.currentTarget.releasePointerCapture) {
-            e.currentTarget.releasePointerCapture(e.pointerId);
+        if ((e.currentTarget as HTMLElement).releasePointerCapture) {
+            (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
         }
     };
 
-    const handleImgWheel = (e) => {
+    const handleImgWheel = (e: React.WheelEvent) => {
         e.stopPropagation();
         const delta = e.deltaY > 0 ? 0.9 : 1.1;
         const newScale = Math.max(0.5, Math.min(10, imgScale * delta));
         setImgScale(newScale);
     };
 
-    const handleImgPointerDown = (e) => {
+    const handleImgPointerDown = (e: React.PointerEvent) => {
         e.stopPropagation();
         imgDragRef.current.isDragging = true;
         imgDragRef.current.lastX = e.clientX;
         imgDragRef.current.lastY = e.clientY;
-        e.currentTarget.setPointerCapture(e.pointerId);
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     };
 
-    const handleImgPointerMove = (e) => {
+    const handleImgPointerMove = (e: React.PointerEvent) => {
         if (!imgDragRef.current.isDragging) return;
         e.stopPropagation();
         const deltaX = e.clientX - imgDragRef.current.lastX;
@@ -319,10 +342,10 @@ const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
         imgDragRef.current.lastY = e.clientY;
     };
 
-    const handleImgPointerUp = (e) => {
+    const handleImgPointerUp = (e: React.PointerEvent) => {
         imgDragRef.current.isDragging = false;
-        if (e.currentTarget.releasePointerCapture) {
-            e.currentTarget.releasePointerCapture(e.pointerId);
+        if ((e.currentTarget as HTMLElement).releasePointerCapture) {
+            (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
         }
     };
 
@@ -390,7 +413,7 @@ const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
                         src={currentPreview} 
                         alt="Screenshot Preview" 
                         className="screenshot-preview-img"
-                        draggable="false"
+                        draggable={false}
                         onLoad={(e) => {
                             const img = e.currentTarget;
                             console.log('Image onLoad:', img.naturalWidth, img.naturalHeight);
@@ -398,10 +421,8 @@ const ScreenshotOverlay = ({ screenshotPath, setScreenshotPath }) => {
                                 annotationCanvasRef.current.width = img.naturalWidth;
                                 annotationCanvasRef.current.height = img.naturalHeight;
                             }
-                            // 使用 requestAnimationFrame 确保布局已完成
                             requestAnimationFrame(() => {
                                 initializeCrop();
-                                // 再次检查，确保容器尺寸已计算
                                 setTimeout(initializeCrop, 50);
                             });
                         }}

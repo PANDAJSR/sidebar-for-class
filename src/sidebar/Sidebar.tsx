@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, MouseEvent, TouchEvent } from 'react';
 import LauncherItem from './components/LauncherItem';
 import VolumeWidget from './components/VolumeWidget';
 import FilesWidget from './components/FilesWidget';
@@ -14,8 +14,11 @@ import useSidebarMouseIgnore from './hooks/useSidebarMouseIgnore';
 import useExternalDrag from './hooks/useExternalDrag';
 import useGlobalEvents from './hooks/useGlobalEvents';
 
-const Sidebar = () => {
-    // 1. 基础 Refs 和配置
+interface SidebarProps {
+    children?: React.ReactNode;
+}
+
+const Sidebar: React.FC<SidebarProps> = () => {
     const { sidebarRef, wrapperRef, animationIdRef, draggingState, constants } = useSidebarRefs();
     const { config, scale, startH, panelWidth, panelHeight } = useSidebarConfig();
     const expandMode = config?.transforms?.expand_mode || 'drag';
@@ -23,47 +26,65 @@ const Sidebar = () => {
     const isEdgeTabStyle = expandMode === 'click' && clickExpandStyle === 'edge_tab';
     const allowDragExpand = expandMode === 'drag' || expandMode === 'both';
     const allowClickExpand = expandMode === 'click' || expandMode === 'both';
-    
-    // 2. 所有的 useState 定义
-    const [screenshotPath, setScreenshotPath] = useState(null);
-    const [isIccRunning, setIsIccRunning] = useState(true);
 
-    // 检查 ICC-CE 是否运行
+    const [screenshotPath, setScreenshotPath] = useState<string | null>(null);
+    const [isIccRunning, setIsIccRunning] = useState<boolean>(true);
+
     useEffect(() => {
         if (!window.electronAPI) return;
-        const checkIccProcess = async () => {
-            const running = await window.electronAPI.isProcessRunning('InkCanvasForClass.exe');
+        const checkIccProcess = async (): Promise<void> => {
+            const running: boolean = await window.electronAPI.isProcessRunning('InkCanvasForClass.exe');
             setIsIccRunning(running);
         };
-        
+
         checkIccProcess();
-        // 缩短轮询间隔至 3 秒
-        const interval = setInterval(checkIccProcess, 3000);
+        const interval: ReturnType<typeof setInterval> = setInterval(checkIccProcess, 3000);
         return () => clearInterval(interval);
     }, []);
 
-    // 4. 钩子函数调用 (获取控制状态)
-    const { isExpanded, expand, collapse, updateSidebarStyles, stopAnimation, setIgnoreMouse, setWindowToLarge } = useSidebarAnimation(config, scale, startH, panelWidth, panelHeight, sidebarRef, wrapperRef, animationIdRef, draggingState, constants);
-    const wrapperClassName = [isExpanded ? 'expanded' : '', isEdgeTabStyle ? 'edge-tab-mode' : '']
+    const { isExpanded, expand, collapse, updateSidebarStyles, stopAnimation, setIgnoreMouse, setWindowToLarge } = useSidebarAnimation(
+        config,
+        scale,
+        startH,
+        panelWidth,
+        panelHeight,
+        sidebarRef,
+        wrapperRef,
+        animationIdRef,
+        draggingState,
+        constants
+    );
+    const wrapperClassName: string = [isExpanded ? 'expanded' : '', isEdgeTabStyle ? 'edge-tab-mode' : '']
         .filter(Boolean)
         .join(' ');
-    const { handleStart, handleMove, handleEnd } = useSidebarDrag(isExpanded, updateSidebarStyles, expand, collapse, stopAnimation, setIgnoreMouse, sidebarRef, wrapperRef, animationIdRef, draggingState, constants, panelWidth, setWindowToLarge, screenshotPath, allowDragExpand);
+    const { handleStart, handleMove, handleEnd } = useSidebarDrag(
+        isExpanded,
+        updateSidebarStyles,
+        expand,
+        collapse,
+        stopAnimation,
+        setIgnoreMouse,
+        sidebarRef,
+        wrapperRef,
+        animationIdRef,
+        draggingState,
+        constants,
+        panelWidth,
+        setWindowToLarge,
+        screenshotPath,
+        allowDragExpand
+    );
 
-    // 5. 其他辅助钩子
     useSidebarMouseIgnore(isExpanded, sidebarRef, wrapperRef, draggingState, animationIdRef, setIgnoreMouse);
     useExternalDrag(isExpanded, expand, collapse, draggingState, setIgnoreMouse, sidebarRef, config);
     useGlobalEvents(handleMove, handleEnd, draggingState);
 
-    // 6. useEffect 逻辑
-
-    // 当侧边栏展开时，立即重新检查一次进程状态，确保组件显隐实时准确
     useEffect(() => {
         if (isExpanded && window.electronAPI) {
             window.electronAPI.isProcessRunning('InkCanvasForClass.exe').then(setIsIccRunning);
         }
     }, [isExpanded]);
 
-    // 当侧边栏收起时，自动清除截图状态
     useEffect(() => {
         if (!isExpanded) {
             setScreenshotPath(null);
@@ -72,29 +93,27 @@ const Sidebar = () => {
 
     useEffect(() => {
         if (!window.electronAPI) return;
-        const handleWindowBlur = () => {
+        const handleWindowBlur = (): void => {
             if (config?.transforms?.auto_hide && isExpanded) {
                 collapse();
             }
         };
         const unsubscribe = window.electronAPI.onWindowBlur(handleWindowBlur);
-        return () => { if (unsubscribe) unsubscribe(); };
+        return (): void => { if (unsubscribe) unsubscribe(); };
     }, [config, isExpanded, collapse]);
 
-    // 7. 事件处理函数
-
-    const handleSettingsClick = (e) => {
+    const handleSettingsClick = (e: MouseEvent<HTMLButtonElement>): void => {
         e.stopPropagation();
         window.electronAPI.openSettings();
     };
 
-    const handleScreenshot = async () => {
+    const handleScreenshot = async (): Promise<void> => {
         try {
             if (isExpanded) {
                 collapse();
-                await new Promise(resolve => setTimeout(resolve, 400));
+                await new Promise<void>((resolve) => setTimeout(resolve, 400));
             }
-            const result = await window.electronAPI.screenshot();
+            const result: string | null = await window.electronAPI.screenshot();
             if (result) {
                 setScreenshotPath(result);
                 expand();
@@ -104,18 +123,27 @@ const Sidebar = () => {
         }
     };
 
-    const handleWrapperClick = () => {
+    const handleWrapperClick = (): void => {
         if (screenshotPath || isExpanded || !allowClickExpand) return;
         expand();
     };
 
-    // 8. 渲染
+    const handleMouseDown = (e: MouseEvent<HTMLDivElement>): void => {
+        handleStart(e.screenX, e.target);
+    };
+
+    const handleTouchStart = (e: TouchEvent<HTMLDivElement>): void => {
+        if (e.touches.length > 0) {
+            handleStart(e.touches[0].screenX, e.target);
+        }
+    };
+
     return (
         <div id="sidebar-wrapper"
             ref={wrapperRef}
             className={wrapperClassName}
-            onMouseDown={(e) => handleStart(e.screenX, e.target)}
-            onTouchStart={(e) => e.touches.length > 0 && handleStart(e.touches[0].screenX, e.target)}
+            onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
             onClick={handleWrapperClick}
         >
             <div id="sidebar" ref={sidebarRef} className={isEdgeTabStyle ? 'edge-tab-style' : ''}>
@@ -124,43 +152,42 @@ const Sidebar = () => {
                         <i className="fas fa-cog"></i>
                     </button>
                     <div id="widget-container" className="widget-list">
-                        {config?.widgets?.map((widget, index) => {
+                        {config?.widgets?.map((widget, index: number) => {
                             if (widget.type === 'launcher') {
                                 return (
                                     <div
                                         key={index}
                                         className={`launcher-group layout-${widget.layout || 'vertical'}`}
                                     >
-                                        {widget.targets.map((target, tIndex) => (
+                                        {widget.targets.map((target, tIndex: number) => (
                                             <LauncherItem key={tIndex} {...target} />
                                         ))}
                                     </div>
                                 );
-                            } 
+                            }
                             else if (widget.type === 'volume_slider') {
                                 return <VolumeWidget key={index} />;
-                            } 
+                            }
                             else if (widget.type === 'files') {
                                 return <FilesWidget key={index} {...widget} />;
-                            } 
+                            }
                             else if (widget.type === 'drag_to_launch') {
                                 return <DragToLaunchWidget key={index} {...widget} />;
                             }
                             else if (widget.type === 'toolbar') {
-                                return <Toolbar 
-                                    key={index} 
-                                    {...widget} 
-                                    isExpanded={isExpanded} 
-                                    collapse={collapse} 
+                                return <Toolbar
+                                    key={index}
+                                    {...widget}
+                                    isExpanded={isExpanded}
+                                    collapse={collapse}
                                     onScreenshot={handleScreenshot}
                                 />;
                             }
                             else if (widget.type === 'iccce_control') {
-                                // 检查是否开启了“仅在运行显示”且当前未运行
                                 if (widget.show_only_when_running !== false && !isIccRunning) {
                                     return null;
                                 }
-return <ICCCEControl
+                                return <ICCCEControl
                                     key={index}
                                     {...widget}
                                     isExpanded={isExpanded}
@@ -173,9 +200,9 @@ return <ICCCEControl
                 </div>
 
                 {screenshotPath && (
-                    <ScreenshotOverlay 
-                        screenshotPath={screenshotPath} 
-                        setScreenshotPath={setScreenshotPath} 
+                    <ScreenshotOverlay
+                        screenshotPath={screenshotPath}
+                        setScreenshotPath={setScreenshotPath}
                     />
                 )}
             </div>

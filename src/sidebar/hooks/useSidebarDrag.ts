@@ -1,6 +1,70 @@
-import { useCallback } from 'react';
+import { useCallback, RefObject } from 'react';
 
-const useSidebarDrag = (isExpanded, updateSidebarStyles, expand, collapse, stopAnimation, setIgnoreMouse, sidebarRef, wrapperRef, animationIdRef, draggingState, constants, panelWidth, setWindowToLarge, screenshotPath, allowDragExpand = true) => {
+interface TransformConfig {
+    size?: number;
+    height?: number;
+    animation_speed?: number;
+    expand_mode?: string;
+    click_expand_style?: string;
+    theme_color?: string;
+    panel?: {
+        width?: number;
+        height?: number;
+    };
+}
+
+interface SidebarConfig {
+    transforms?: TransformConfig;
+    displayBounds?: {
+        y: number;
+        height: number;
+    };
+}
+
+interface DraggingState {
+    isDragging: boolean;
+    isSwipeActive: boolean;
+    startX: number;
+    lastX: number;
+    lastTime: number;
+    startTimeStamp: number;
+    currentVelocity: number;
+    lastIgnoreState: boolean | null;
+    lastResizeTime: number;
+}
+
+interface Constants {
+    BASE_START_W: number;
+    BASE_START_H: number;
+    TARGET_W: number;
+    TARGET_H: number;
+    THRESHOLD: number;
+    VELOCITY_THRESHOLD: number;
+}
+
+interface UseSidebarDragReturn {
+    handleStart: (currentX: number, target: EventTarget | null) => void;
+    handleMove: (currentX: number) => void;
+    handleEnd: (currentX: number | null) => void;
+}
+
+const useSidebarDrag = (
+    isExpanded: boolean,
+    updateSidebarStyles: (progress: number) => void,
+    expand: () => void,
+    collapse: () => void,
+    stopAnimation: () => void,
+    setIgnoreMouse: (ignore: boolean) => void,
+    sidebarRef: RefObject<HTMLElement | null>,
+    wrapperRef: RefObject<HTMLElement | null>,
+    animationIdRef: RefObject<number | null>,
+    draggingState: RefObject<DraggingState>,
+    constants: Constants,
+    panelWidth: number,
+    setWindowToLarge: (() => void) | undefined,
+    screenshotPath: string | undefined,
+    allowDragExpand: boolean = true
+): UseSidebarDragReturn => {
     const { BASE_START_W, VELOCITY_THRESHOLD } = constants;
 
     const activateDragVisuals = () => {
@@ -9,23 +73,20 @@ const useSidebarDrag = (isExpanded, updateSidebarStyles, expand, collapse, stopA
         if (setWindowToLarge) setWindowToLarge();
     };
 
-    const handleStart = (currentX, target) => {
-        // 如果正在显示截图预览遮罩，禁用侧边栏拖拽收起功能
+    const handleStart = (currentX: number, target: EventTarget | null) => {
         if (screenshotPath) return;
         if (!isExpanded && !allowDragExpand) return;
 
-        const isInteractive = (el) => {
+        const isInteractive = (el: Element | null): boolean => {
+            if (!el) return false;
             return el.tagName === 'INPUT' ||
                 el.tagName === 'BUTTON' ||
                 el.tagName === 'A' ||
-                el.closest('.launcher-item') ||
-                el.closest('.volume-slider-container');
+                !!el.closest('.launcher-item') ||
+                !!el.closest('.volume-slider-container');
         };
 
-        if (isExpanded && isInteractive(target)) return;
-        
-        // 当未展开时，因为 useSidebarMouseIgnore 已经限制了鼠标穿透区域（包含 4px 缓冲），
-        // 只要事件能到达这里，说明已经在触发范围内了。
+        if (isExpanded && target instanceof Element && isInteractive(target)) return;
 
         const ds = draggingState.current;
         ds.isDragging = true;
@@ -58,14 +119,13 @@ const useSidebarDrag = (isExpanded, updateSidebarStyles, expand, collapse, stopA
         }
     };
 
-    const handleMove = useCallback((currentX) => {
+    const handleMove = useCallback((currentX: number) => {
         const ds = draggingState.current;
         if (!ds.isDragging) return;
 
         const now = performance.now();
         const dt = now - ds.lastTime;
         if (dt > 0) {
-            // 使用简单的平滑处理
             const instantVelocity = (currentX - ds.lastX) / dt;
             ds.currentVelocity = ds.currentVelocity * 0.3 + instantVelocity * 0.7;
         }
@@ -76,7 +136,6 @@ const useSidebarDrag = (isExpanded, updateSidebarStyles, expand, collapse, stopA
         const deltaXFromStart = isExpanded ? (deltaXTotal - 250) : deltaXTotal;
 
         if (!ds.isSwipeActive) {
-            // 如果移动距离超过 10px 或者速度超过某一阈值，则激活滑动
             if (Math.abs(deltaXFromStart) > 10 || Math.abs(ds.currentVelocity) > 0.3) {
                 ds.isSwipeActive = true;
                 activateDragVisuals();
@@ -89,7 +148,7 @@ const useSidebarDrag = (isExpanded, updateSidebarStyles, expand, collapse, stopA
         updateSidebarStyles(deltaX / 250);
     }, [updateSidebarStyles, draggingState, activateDragVisuals, isExpanded]);
 
-    const handleEnd = useCallback((currentX) => {
+    const handleEnd = useCallback((currentX: number | null) => {
         const ds = draggingState.current;
         if (!ds.isDragging) return;
         ds.isDragging = false;
@@ -100,14 +159,11 @@ const useSidebarDrag = (isExpanded, updateSidebarStyles, expand, collapse, stopA
         const deltaX = finalX - ds.startX;
         const duration = performance.now() - ds.startTimeStamp;
 
-        // 根据速度和距离判断最终状态
-        // 1. 如果向左快速划
         if (ds.currentVelocity < -VELOCITY_THRESHOLD) {
             collapse();
             return;
         }
 
-        // 2. 如果向右快速划，或者滑动距离超过门槛，或者快速短促滑动
         if (ds.currentVelocity > VELOCITY_THRESHOLD || deltaX > 120 || (duration < 250 && deltaX > 30)) {
             expand();
         } else {

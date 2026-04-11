@@ -1,36 +1,29 @@
-/**
- * 工具栏组件
- * 显示工具按钮，每行最多显示5个按钮，超过自动换行
- * @param {Array<string>} tools - 工具名称数组
- * @param {boolean} isExpanded - 侧边栏是否展开
- * @param {Function} collapse - 收起侧边栏的函数
- */
 import React from 'react';
 
-const Toolbar = ({ tools = [], isExpanded, collapse, isPreview = false, onScreenshot }) => {
+interface ToolbarProps {
+    tools?: string[];
+    isExpanded?: boolean;
+    collapse?: () => void;
+    isPreview?: boolean;
+    onScreenshot?: () => void;
+}
+
+const Toolbar: React.FC<ToolbarProps> = ({ tools = [], isExpanded, collapse, isPreview = false, onScreenshot }) => {
     const columns = Math.min(Math.max(tools.length, 1), 5);
 
-    /**
-     * 处理工具按钮点击事件
-     * @param {string} tool - 工具名称
-     */
-    const handleToolClick = async (tool) => {
+    const handleToolClick = async (tool: string) => {
         if (isPreview) return;
         
-        // 根据不同的工具执行不同的操作
         if (tool === 'screenshot') {
             if (onScreenshot) {
                 onScreenshot();
             } else if (window.electronAPI && window.electronAPI.screenshot) {
                 try {
-                    // 如果侧边栏是展开的，先收起并等待动画完成
                     if (isExpanded && collapse) {
                         collapse();
-                        // 等待收起动画完成（默认300ms，加上一些缓冲时间）
                         await new Promise(resolve => setTimeout(resolve, 400));
                     }
 
-                    // 执行截图
                     await window.electronAPI.screenshot();
                 } catch (error) {
                     console.error('Screenshot failed:', error);
@@ -51,13 +44,8 @@ const Toolbar = ({ tools = [], isExpanded, collapse, isPreview = false, onScreen
         }
     };
 
-    /**
-     * 获取工具对应的图标类名
-     * @param {string} tool - 工具名称
-     * @returns {string} - FontAwesome 图标类名
-     */
-    const getToolIcon = (tool) => {
-        const iconMap = {
+    const getToolIcon = (tool: string): string => {
+        const iconMap: Record<string, string> = {
             'screenshot': 'fa-camera',
             'show_desktop': 'fa-desktop',
             'taskview': 'fa-columns',
@@ -68,13 +56,8 @@ const Toolbar = ({ tools = [], isExpanded, collapse, isPreview = false, onScreen
         return iconMap[tool] || 'fa-tools';
     };
 
-    /**
-     * 获取工具对应的中文显示名称
-     * @param {string} tool - 工具名称
-     * @returns {string} - 中文名称
-     */
-    const getToolDisplayName = (tool) => {
-        const nameMap = {
+    const getToolDisplayName = (tool: string): string => {
+        const nameMap: Record<string, string> = {
             'screenshot': '截图',
             'show_desktop': '显示桌面',
             'taskview': '任务视图',

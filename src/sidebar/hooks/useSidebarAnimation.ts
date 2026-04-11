@@ -1,25 +1,95 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, RefObject } from 'react';
+
+interface TransformConfig {
+    size?: number;
+    height?: number;
+    animation_speed?: number;
+    expand_mode?: string;
+    click_expand_style?: string;
+    theme_color?: string;
+    panel?: {
+        width?: number;
+        height?: number;
+    };
+}
+
+interface SidebarConfig {
+    transforms?: TransformConfig;
+    displayBounds?: {
+        y: number;
+        height: number;
+    };
+}
+
+interface DraggingState {
+    isDragging: boolean;
+    isSwipeActive: boolean;
+    startX: number;
+    lastX: number;
+    lastTime: number;
+    startTimeStamp: number;
+    currentVelocity: number;
+    lastIgnoreState: boolean | null;
+    lastResizeTime: number;
+}
+
+interface Constants {
+    BASE_START_W: number;
+    BASE_START_H: number;
+    TARGET_W: number;
+    TARGET_H: number;
+    THRESHOLD: number;
+    VELOCITY_THRESHOLD: number;
+}
+
+interface LayoutResult {
+    targetWinW: number;
+    targetWinH: number;
+    finalWindowY: number;
+    offsetY: number;
+}
+
+interface UseSidebarAnimationReturn {
+    isExpanded: boolean;
+    expand: () => void;
+    collapse: () => void;
+    updateSidebarStyles: (progress: number) => void;
+    stopAnimation: () => void;
+    setIgnoreMouse: (ignore: boolean) => void;
+    setWindowToLarge: () => void;
+}
 
 const EDGE_TAB_VISIBLE_WIDTH = 14;
 const EDGE_TAB_COLLAPSED_WIDTH = 64;
 
-const useSidebarAnimation = (config, scale, startH, panelWidth, panelHeight, sidebarRef, wrapperRef, animationIdRef, draggingState, constants) => {
-    const [isExpanded, setIsExpanded] = useState(false);
-    const progressRef = useRef(0);
+const useSidebarAnimation = (
+    config: SidebarConfig | null,
+    scale: number,
+    startH: number,
+    panelWidth: number,
+    panelHeight: number,
+    sidebarRef: RefObject<HTMLElement | null>,
+    wrapperRef: RefObject<HTMLElement | null>,
+    animationIdRef: RefObject<number | null>,
+    draggingState: RefObject<DraggingState>,
+    constants: Constants
+): UseSidebarAnimationReturn => {
+    const [isExpanded, setIsExpanded] = useState<boolean>(false);
+    const progressRef = useRef<number>(0);
 
     const { BASE_START_W } = constants;
     const expandMode = config?.transforms?.expand_mode || 'drag';
     const clickExpandStyle = config?.transforms?.click_expand_style || 'bar';
     const isEdgeTabStyle = expandMode === 'click' && clickExpandStyle === 'edge_tab';
 
-    const setIgnoreMouse = (ignore) => {
+    const setIgnoreMouse = (ignore: boolean) => {
         if (window.electronAPI && ignore !== draggingState.current.lastIgnoreState) {
             draggingState.current.lastIgnoreState = ignore;
             window.electronAPI.setIgnoreMouse(ignore, true);
         }
     };
 
-    const calculateLayout = useCallback((progress) => {
+    const calculateLayout = useCallback((progress: number): LayoutResult | null => {
         if (!config?.transforms || !config?.displayBounds) return null;
 
         const { posy } = config.transforms;
@@ -63,7 +133,7 @@ const useSidebarAnimation = (config, scale, startH, panelWidth, panelHeight, sid
         }
     }, [calculateLayout]);
 
-    const updateSidebarStyles = useCallback((progress) => {
+    const updateSidebarStyles = useCallback((progress: number) => {
         if (!sidebarRef.current) return;
 
         const clampedProgress = Math.max(0, Math.min(1, progress));
@@ -117,7 +187,7 @@ const useSidebarAnimation = (config, scale, startH, panelWidth, panelHeight, sid
         if (sidebarRef.current) {
             sidebarRef.current.style.transition = '';
             ['width', 'height', 'borderRadius', 'marginLeft', 'background', 'backgroundColor', 'transform'].forEach((p) => {
-                sidebarRef.current.style[p] = '';
+                (sidebarRef.current!.style as Record<string, string>)[p] = '';
             });
             updateSidebarStyles(0);
         }
@@ -139,9 +209,9 @@ const useSidebarAnimation = (config, scale, startH, panelWidth, panelHeight, sid
         const speed = config?.transforms?.animation_speed || 1;
         const duration = 300 / speed;
         const startTime = performance.now();
-        const easeOutQuart = (x) => 1 - Math.pow(1 - x, 4);
+        const easeOutQuart = (x: number) => 1 - Math.pow(1 - x, 4);
 
-        const animate = (currentTime) => {
+        const animate = (currentTime: number) => {
             const elapsed = currentTime - startTime;
             const t = Math.min(1, elapsed / duration);
             const p = startProgress + (1 - startProgress) * easeOutQuart(t);
@@ -166,10 +236,10 @@ const useSidebarAnimation = (config, scale, startH, panelWidth, panelHeight, sid
         const speed = config?.transforms?.animation_speed || 1;
         const duration = 300 / speed;
         const startTime = performance.now();
-        const easeOutQuart = (x) => 1 - Math.pow(1 - x, 4);
+        const easeOutQuart = (x: number) => 1 - Math.pow(1 - x, 4);
         const startProgress = progressRef.current;
 
-        const animate = (currentTime) => {
+        const animate = (currentTime: number) => {
             const elapsed = currentTime - startTime;
             const t = Math.min(1, elapsed / duration);
             const p = startProgress * (1 - easeOutQuart(t));

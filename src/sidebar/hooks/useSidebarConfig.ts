@@ -1,13 +1,42 @@
 import { useState, useEffect } from 'react';
 
-const useSidebarConfig = () => {
-    const [config, setConfig] = useState(null);
-    const [scale, setScale] = useState(1);
-    const [startH, setStartH] = useState(64);
-    const [panelWidth, setPanelWidth] = useState(450);
-    const [panelHeight, setPanelHeight] = useState(400);
+interface TransformConfig {
+    size?: number;
+    height?: number;
+    animation_speed?: number;
+    expand_mode?: string;
+    click_expand_style?: string;
+    theme_color?: string;
+    panel?: {
+        width?: number;
+        height?: number;
+    };
+}
 
-    const applyConfig = (c) => {
+interface SidebarConfig {
+    transforms?: TransformConfig;
+    displayBounds?: {
+        y: number;
+        height: number;
+    };
+}
+
+interface UseSidebarConfigReturn {
+    config: SidebarConfig | null;
+    scale: number;
+    startH: number;
+    panelWidth: number;
+    panelHeight: number;
+}
+
+const useSidebarConfig = (): UseSidebarConfigReturn => {
+    const [config, setConfig] = useState<SidebarConfig | null>(null);
+    const [scale, setScale] = useState<number>(1);
+    const [startH, setStartH] = useState<number>(64);
+    const [panelWidth, setPanelWidth] = useState<number>(450);
+    const [panelHeight, setPanelHeight] = useState<number>(400);
+
+    const applyConfig = (c: SidebarConfig) => {
         setConfig(c);
         if (c.transforms) {
             if (typeof c.transforms.size === 'number' && c.transforms.size > 0) {
@@ -29,7 +58,6 @@ const useSidebarConfig = () => {
                     setPanelHeight(c.transforms.panel.height);
                 }
             }
-            // 应用主题色
             if (c.transforms.theme_color) {
                 document.documentElement.style.setProperty('--theme-color', c.transforms.theme_color);
             } else {
@@ -51,7 +79,7 @@ const useSidebarConfig = () => {
         };
         fetchConfig();
 
-        const unbind = window.electronAPI.onConfigUpdated((newConfig) => {
+        const unbind = window.electronAPI.onConfigUpdated((newConfig: SidebarConfig) => {
             applyConfig(newConfig);
         });
 
