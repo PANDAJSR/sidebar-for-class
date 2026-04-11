@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import 'mdui/components/card.js';
-import 'mdui/components/slider.js';
-import 'mdui/components/switch.js';
-import 'mdui/components/text-field.js';
-import 'mdui/components/dropdown.js';
-import 'mdui/components/menu.js';
-import 'mdui/components/menu-item.js';
-import 'mdui/components/button.js';
+import Card from '@mui/joy/Card';
+import Slider from '@mui/joy/Slider';
+import Switch from '@mui/joy/Switch';
+import FormControl from '@mui/joy/FormControl';
+import FormLabel from '@mui/joy/FormLabel';
+import Select from '@mui/joy/Select';
+import Option from '@mui/joy/Option';
+import Button from '@mui/joy/Button';
+import Input from '@mui/joy/Input';
 
 const WindowSettings = ({ config, handleTransformChange, styles }) => {
     const [displays, setDisplays] = useState([]);
@@ -49,41 +50,34 @@ const WindowSettings = ({ config, handleTransformChange, styles }) => {
             </div>
 
             <div className={styles.groupTitle}>显示器</div>
-            <mdui-card variant="filled" className={styles.card}>
+            <Card variant="soft" className={styles.card}>
                 <div className={styles.formGroup}>
                     <div className={styles.label}>选择显示器</div>
-                    <mdui-dropdown>
-                        <mdui-button slot="trigger" variant="tonal" style={{ width: '150px' }}>
-                            {displays[config.transforms.display]
-                                ? (displays[config.transforms.display].label || `显示器 ${config.transforms.display} (${displays[config.transforms.display].bounds.width}x${displays[config.transforms.display].bounds.height})`)
-                                : `显示器 ${config.transforms.display}`}
-                        </mdui-button>
-                        <mdui-menu>
-                            {displays.map((display, index) => (
-                                <mdui-menu-item
-                                    key={index}
-                                    value={index.toString()}
-                                    onClick={() => handleTransformChange('display', index)}
-                                >
-                                    {display.label || `显示器 ${index} (${display.bounds.width}x${display.bounds.height})`}
-                                </mdui-menu-item>
-                            ))}
-                        </mdui-menu>
-                    </mdui-dropdown>
+                    <Select
+                        value={config.transforms.display?.toString() || '0'}
+                        onChange={(_, value) => handleTransformChange('display', parseInt(value))}
+                        sx={{ width: 200 }}
+                    >
+                        {displays.map((display, index) => (
+                            <Option key={index} value={index.toString()}>
+                                {display.label || `显示器 ${index} (${display.bounds.width}x${display.bounds.height})`}
+                            </Option>
+                        ))}
+                    </Select>
                     <div className={styles.helpText}>选择侧边栏所在的屏幕</div>
                 </div>
-            </mdui-card>
+            </Card>
 
             <div className={styles.groupTitle}>位置与尺寸</div>
-            <mdui-card variant="filled" className={styles.card}>
+            <Card variant="soft" className={styles.card}>
                 <div className={styles.formGroup}>
                     <div className={styles.label}>垂直位置</div>
                     <div className={styles.rangeContainer}>
-                        <mdui-slider
+                        <Slider
                             min={0}
                             max={config.displayBounds?.height || 2000}
                             value={config.transforms.posy}
-                            onChange={(e) => handleTransformChange('posy', parseInt(e.target.value, 10))}
+                            onChange={(_, value) => handleTransformChange('posy', value)}
                         />
                         <span className={styles.rangeValue}>{config.transforms.posy}px</span>
                     </div>
@@ -92,12 +86,12 @@ const WindowSettings = ({ config, handleTransformChange, styles }) => {
 
                 <div className={styles.formGroup}>
                     <div className={styles.label}>初始高度</div>
-                    <mdui-text-field
+                    <Input
                         type="number"
                         value={config.transforms.height}
                         onChange={(e) => handleTransformChange('height', parseInt(e.target.value, 10))}
-                        end-icon="px"
-                        style={{ width: '200px' }}
+                        endDecorator="px"
+                        sx={{ width: 200 }}
                     />
                     <div className={styles.helpText}>收起状态下侧边栏的高度</div>
                 </div>
@@ -105,7 +99,7 @@ const WindowSettings = ({ config, handleTransformChange, styles }) => {
                 <div className={styles.formGroup}>
                     <div className={styles.switchRow}>
                         <div className={styles.label}>自动收起</div>
-                        <mdui-switch
+                        <Switch
                             checked={config.transforms.auto_hide}
                             onChange={(e) => handleTransformChange('auto_hide', e.target.checked)}
                         />
@@ -115,45 +109,33 @@ const WindowSettings = ({ config, handleTransformChange, styles }) => {
 
                 <div className={styles.formGroup}>
                     <div className={styles.label}>展开方式</div>
-                    <mdui-dropdown>
-                        <mdui-button slot="trigger" variant="tonal" style={{ width: '180px' }}>
-                            {expandModeLabels[expandMode] || expandModeLabels.drag}
-                        </mdui-button>
-                        <mdui-menu>
-                            <mdui-menu-item value="click" onClick={() => handleTransformChange('expand_mode', 'click')}>
-                                {expandModeLabels.click}
-                            </mdui-menu-item>
-                            <mdui-menu-item value="drag" onClick={() => handleTransformChange('expand_mode', 'drag')}>
-                                {expandModeLabels.drag}
-                            </mdui-menu-item>
-                            <mdui-menu-item value="both" onClick={() => handleTransformChange('expand_mode', 'both')}>
-                                {expandModeLabels.both}
-                            </mdui-menu-item>
-                        </mdui-menu>
-                    </mdui-dropdown>
+                    <Select
+                        value={expandMode}
+                        onChange={(_, value) => handleTransformChange('expand_mode', value)}
+                        sx={{ width: 180 }}
+                    >
+                        <Option value="click">{expandModeLabels.click}</Option>
+                        <Option value="drag">{expandModeLabels.drag}</Option>
+                        <Option value="both">{expandModeLabels.both}</Option>
+                    </Select>
                     <div className={styles.helpText}>设置收起状态下通过点击、拖动或两者都可来展开侧边栏</div>
                 </div>
 
                 {expandMode === 'click' && (
                     <div className={styles.formGroup}>
                         <div className={styles.label}>点击展开样式</div>
-                        <mdui-dropdown>
-                            <mdui-button slot="trigger" variant="tonal" style={{ width: '200px' }}>
-                                {clickStyleLabels[clickExpandStyle] || clickStyleLabels.bar}
-                            </mdui-button>
-                            <mdui-menu>
-                                <mdui-menu-item value="bar" onClick={() => handleTransformChange('click_expand_style', 'bar')}>
-                                    {clickStyleLabels.bar}
-                                </mdui-menu-item>
-                                <mdui-menu-item value="edge_tab" onClick={() => handleTransformChange('click_expand_style', 'edge_tab')}>
-                                    {clickStyleLabels.edge_tab}
-                                </mdui-menu-item>
-                            </mdui-menu>
-                        </mdui-dropdown>
-                        <div className={styles.helpText}>仅在“点击展开”模式下可选，贴边把手将使用水平滑入/滑出动画</div>
+                        <Select
+                            value={clickExpandStyle}
+                            onChange={(_, value) => handleTransformChange('click_expand_style', value)}
+                            sx={{ width: 200 }}
+                        >
+                            <Option value="bar">{clickStyleLabels.bar}</Option>
+                            <Option value="edge_tab">{clickStyleLabels.edge_tab}</Option>
+                        </Select>
+                        <div className={styles.helpText}>仅在"点击展开"模式下可选，贴边把手将使用水平滑入/滑出动画</div>
                     </div>
                 )}
-            </mdui-card>
+            </Card>
         </div>
     );
 };

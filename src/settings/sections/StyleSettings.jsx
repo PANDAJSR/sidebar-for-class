@@ -7,8 +7,8 @@
  */
 
 import React from 'react';
-import 'mdui/components/card.js';
-import 'mdui/components/slider.js';
+import Card from '@mui/joy/Card';
+import Slider from '@mui/joy/Slider';
 
 const StyleSettings = ({ config, handleTransformChange, styles }) => {
     return (
@@ -18,16 +18,16 @@ const StyleSettings = ({ config, handleTransformChange, styles }) => {
                 <div className={styles.description}>配置侧边栏的动画速度、缩放比例和展开后的尺寸。</div>
             </div>
 
-            <mdui-card variant="filled" className={styles.card}>
+            <Card variant="soft" className={styles.card}>
                 <div className={styles.formGroup}>
                     <div className={styles.label}>动画速度</div>
                     <div className={styles.rangeContainer}>
-                        <mdui-slider
+                        <Slider
                             min={0.1}
                             max={3}
                             step={0.1}
                             value={config.transforms.animation_speed}
-                            onChange={(e) => handleTransformChange('animation_speed', parseFloat(e.target.value))}
+                            onChange={(_, value) => handleTransformChange('animation_speed', value)}
                         />
                         <span className={styles.rangeValue}>{config.transforms.animation_speed.toFixed(1)}x</span>
                     </div>
@@ -37,12 +37,12 @@ const StyleSettings = ({ config, handleTransformChange, styles }) => {
                 <div className={styles.formGroup}>
                     <div className={styles.label}>整体缩放</div>
                     <div className={styles.rangeContainer}>
-                        <mdui-slider
+                        <Slider
                             min={50}
                             max={200}
                             step={10}
                             value={config.transforms.size}
-                            onChange={(e) => handleTransformChange('size', parseInt(e.target.value))}
+                            onChange={(_, value) => handleTransformChange('size', value)}
                         />
                         <span className={styles.rangeValue}>{config.transforms.size}%</span>
                     </div>
@@ -52,15 +52,14 @@ const StyleSettings = ({ config, handleTransformChange, styles }) => {
                 <div className={styles.formGroup}>
                     <div className={styles.label}>展开后宽度</div>
                     <div className={styles.rangeContainer}>
-                        <mdui-slider
+                        <Slider
                             min={300}
                             max={800}
                             step={10}
                             value={config.transforms?.panel?.width || 450}
-                            onChange={(e) => {
-                                const newWidth = parseInt(e.target.value);
+                            onChange={(_, value) => {
                                 const currentPanelConfig = config.transforms?.panel || {};
-                                handleTransformChange('panel', { ...currentPanelConfig, width: newWidth });
+                                handleTransformChange('panel', { ...currentPanelConfig, width: value });
                             }}
                         />
                         <span className={styles.rangeValue}>{config.transforms?.panel?.width || 450}px</span>
@@ -71,15 +70,14 @@ const StyleSettings = ({ config, handleTransformChange, styles }) => {
                 <div className={styles.formGroup}>
                     <div className={styles.label}>展开后高度</div>
                     <div className={styles.rangeContainer}>
-                        <mdui-slider
+                        <Slider
                             min={300}
                             max={800}
                             step={10}
                             value={config.transforms?.panel?.height || 400}
-                            onChange={(e) => {
-                                const newHeight = parseInt(e.target.value);
+                            onChange={(_, value) => {
                                 const currentPanelConfig = config.transforms?.panel || {};
-                                handleTransformChange('panel', { ...currentPanelConfig, height: newHeight });
+                                handleTransformChange('panel', { ...currentPanelConfig, height: value });
                             }}
                         />
                         <span className={styles.rangeValue}>{config.transforms?.panel?.height || 400}px</span>
@@ -100,7 +98,7 @@ const StyleSettings = ({ config, handleTransformChange, styles }) => {
                     </div>
                     <div className={styles.helpText}>设置侧边栏的主题强调色</div>
                 </div>
-            </mdui-card>
+            </Card>
         </div>
     );
 };

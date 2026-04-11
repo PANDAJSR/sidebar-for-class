@@ -7,75 +7,89 @@
  */
 
 import React from 'react';
-import 'mdui/mdui.css';
-import 'mdui/components/navigation-rail.js';
-import 'mdui/components/navigation-rail-item.js';
+import List from '@mui/joy/List';
+import ListItem from '@mui/joy/ListItem';
+import ListItemButton from '@mui/joy/ListItemButton';
+import ListItemContent from '@mui/joy/ListItemContent';
+import ListItemDecorator from '@mui/joy/ListItemDecorator';
+import SettingsIcon from '@mui/icons-material/Settings';
+import DesktopWindowsIcon from '@mui/icons-material/DesktopWindows';
+import BrushIcon from '@mui/icons-material/Brush';
+import AppsIcon from '@mui/icons-material/Apps';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
+import StorageIcon from '@mui/icons-material/Storage';
+import TimerIcon from '@mui/icons-material/Timer';
+import BuildIcon from '@mui/icons-material/Build';
+
+const iconMap = {
+    basic: SettingsIcon,
+    window: DesktopWindowsIcon,
+    style: BrushIcon,
+    components: AppsIcon,
+    automation: SmartToyIcon,
+    data: StorageIcon,
+    timer: TimerIcon,
+    tools: BuildIcon
+};
+
+const labelMap = {
+    basic: '基本',
+    window: '窗口',
+    style: '样式',
+    components: '组件',
+    automation: '自动化',
+    data: '数据',
+    timer: '计时器',
+    tools: '辅助工具'
+};
 
 const SidebarNav = ({ selectedTab, onTabSelect, styles }) => {
     const handleTabClick = (tabValue) => {
         onTabSelect(tabValue);
     };
 
+    const tabs = ['basic', 'window', 'style', 'components', 'automation', 'data', 'timer', 'tools'];
+
     return (
         <aside className={styles.sidebar}>
-            <mdui-navigation-rail value={selectedTab}>
-                <mdui-navigation-rail-item
-                    value="basic"
-                    icon="settings"
-                    onClick={() => handleTabClick('basic')}
-                >
-                    基本
-                </mdui-navigation-rail-item>
-                <mdui-navigation-rail-item
-                    value="window"
-                    icon="desktop_windows"
-                    onClick={() => handleTabClick('window')}
-                >
-                    窗口
-                </mdui-navigation-rail-item>
-                <mdui-navigation-rail-item
-                    value="style"
-                    icon="brush"
-                    onClick={() => handleTabClick('style')}
-                >
-                    样式
-                </mdui-navigation-rail-item>
-                <mdui-navigation-rail-item
-                    value="components"
-                    icon="apps"
-                    onClick={() => handleTabClick('components')}
-                >
-                    组件
-                </mdui-navigation-rail-item>
-                <mdui-navigation-rail-item
-                    value="automation"
-                    icon="smart_toy"
-                    onClick={() => handleTabClick('automation')}
-                >
-                    自动化
-                </mdui-navigation-rail-item>
-                <mdui-navigation-rail-item
-                    value="data"
-                    icon="storage"
-                    onClick={() => handleTabClick('data')}
-                >
-                    数据
-                </mdui-navigation-rail-item>
-                <mdui-navigation-rail-item
-                    value="timer"
-                    icon="timer"
-                    onClick={() => handleTabClick('timer')}
-                >
-                    计时器
-                </mdui-navigation-rail-item>
-                <mdui-navigation-rail-item
-                    value="tools"
-                    icon="build"
-                    onClick={() => handleTabClick('tools')}
-                >
-                    辅助工具
-                </mdui-navigation-rail-item>
-            </mdui-navigation-rail>
+            <List
+                orientation="vertical"
+                size="sm"
+                sx={{
+                    '--List-item-radius': '8px',
+                    '--List-item-paddingY': '8px',
+                    '--List-item-paddingX': '12px',
+                }}
+            >
+                {tabs.map((tab) => {
+                    const Icon = iconMap[tab];
+                    return (
+                        <ListItem key={tab}>
+                            <ListItemButton
+                                selected={selectedTab === tab}
+                                onClick={() => handleTabClick(tab)}
+                                sx={{
+                                    borderRadius: '8px',
+                                    '&.Mui-selected': {
+                                        backgroundColor: 'var(--joy-palette-primary-container)',
+                                        color: 'var(--joy-palette-on-primary-container)',
+                                        '&:hover': {
+                                            backgroundColor: 'var(--joy-palette-primary-containerHover)',
+                                        }
+                                    }
+                                }}
+                            >
+                                <ListItemDecorator>
+                                    {Icon && <Icon sx={{ fontSize: 20 }} />}
+                                </ListItemDecorator>
+                                <ListItemContent>
+                                    {labelMap[tab]}
+                                </ListItemContent>
+                            </ListItemButton>
+                        </ListItem>
+                    );
+                })}
+            </List>
         </aside>
     );
 };
