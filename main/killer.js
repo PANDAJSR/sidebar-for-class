@@ -32,6 +32,20 @@ const TIMER_WINDOW_TITLES = [
 
 let checkTimeout = null;
 let isPerformingKill = false;
+let cachedConfig = null;
+let cachedConfigAt = 0;
+const CONFIG_CACHE_TTL_MS = 1000;
+
+function getCurrentConfig(forceRefresh = false) {
+    const now = Date.now();
+    if (!forceRefresh && cachedConfig && (now - cachedConfigAt) < CONFIG_CACHE_TTL_MS) {
+        return cachedConfig;
+    }
+
+    cachedConfig = getConfigSync();
+    cachedConfigAt = now;
+    return cachedConfig;
+}
 
 /**
  * 获取我们应用所有进程的 PID 集合
@@ -45,7 +59,7 @@ function getOurPids() {
  * 处理单个窗口事件
  */
 async function handleWindowEvent(event) {
-    const config = getConfigSync();
+    const config = getCurrentConfig();
     const { title, hwnd, pid, width, height, type } = event;
     
     // 忽略标题为空的窗口
@@ -118,7 +132,7 @@ async function performKill() {
     isPerformingKill = true;
 
     try {
-        const config = getConfigSync();
+        const config = getCurrentConfig(true);
         
         // 1. 处理通用同类软件查杀
         if (config.helper_tools?.auto_kill_similar) {

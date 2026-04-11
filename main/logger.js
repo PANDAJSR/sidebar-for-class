@@ -8,7 +8,29 @@ const path = require('path');
 const util = require('util');
 
 const APP_LOG_DIR_NAME = 'SidebarForClassLogs';
+const LOG_LEVELS = {
+  DEBUG: 10,
+  INFO: 20,
+  WARN: 30,
+  ERROR: 40,
+  FATAL: 50
+};
+const DEFAULT_LOG_LEVEL = 'INFO';
 let cachedLogDir = null;
+
+function normalizeLogLevel(level) {
+  const upper = String(level || '').trim().toUpperCase();
+  return LOG_LEVELS[upper] ? upper : DEFAULT_LOG_LEVEL;
+}
+
+function resolveRuntimeLogLevel() {
+  return normalizeLogLevel(process.env.LOG_LEVEL || process.env.SIDEBAR_LOG_LEVEL);
+}
+
+function shouldEmit(level) {
+  const currentLevel = resolveRuntimeLogLevel();
+  return LOG_LEVELS[level] >= LOG_LEVELS[currentLevel];
+}
 
 function getNowIso() {
   return new Date().toISOString();
@@ -109,6 +131,10 @@ function toHumanString(value) {
 }
 
 function emit(level, moduleName, event, context) {
+  if (!shouldEmit(level)) {
+    return;
+  }
+
   const timestamp = getNowIso();
   const pid = process.pid;
   const base = `[${timestamp}] [pid:${pid}] [${level}] [${moduleName}] ${event}`;
