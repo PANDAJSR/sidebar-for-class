@@ -2,7 +2,7 @@
   "name": "sidebar-for-class",
   "version": "1.0.0",
   "description": "",
-  "main": "main.ts",
+  "main": "main.js",
   "scripts": {
     "start": "vite",
     "electron": "wait-on http://localhost:3000 && tsx scripts/run-electron.ts",
