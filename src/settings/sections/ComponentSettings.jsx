@@ -95,6 +95,7 @@ const ComponentSettings = ({ config, updateConfig, styles, loadIcon, preloadWidg
             newWidget.tools = ['screenshot', 'show_desktop', 'taskview'];
         } else if (type === 'iccce_control') {
             newWidget.functions = ['randone', 'rand', 'timer', 'whiteboard', 'show'];
+            newWidget.show_only_when_collapsed = false;
         }
 
         return newWidget;

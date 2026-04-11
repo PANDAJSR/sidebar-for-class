@@ -681,6 +681,21 @@ const PropertiesPanel = ({
 
                             <Divider sx={{ my: 2 }} />
 
+                            <div className={styles.propertyGroup}>
+                                <Box className={styles.switchRow}>
+                                    <span style={{ fontSize: '14px' }}>仅在 ICC-CE 处于收纳模式时显示</span>
+                                    <Switch
+                                        checked={selectedWidget.show_only_when_collapsed || false}
+                                        onChange={(e) => updateWidgetProperty('show_only_when_collapsed', e.target.checked)}
+                                    />
+                                </Box>
+                                <Typography level="body-xs" sx={{ color: 'var(--joy-palette-text-secondary)', mt: 0.5 }}>
+                                    开启后，当侧边栏展开时此组件将自动隐藏，仅在收纳模式下显示。
+                                </Typography>
+                            </div>
+
+                            <Divider sx={{ my: 2 }} />
+
                             <Card variant="soft" sx={{ p: 2 }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, color: 'var(--joy-palette-primary-500)' }}>
                                     <InfoIcon sx={{ fontSize: 18 }} />
