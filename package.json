@@ -6,11 +6,11 @@
   "scripts": {
     "start": "vite",
     "electron": "wait-on http://localhost:3000 && tsx scripts/run-electron.ts",
-    "dev": "concurrently \"npm run start\" \"npm run electron\"",
+    "dev": "concurrently \"pnpm run start\" \"pnpm run electron\"",
     "build": "vite build",
-    "build:win": "npm run build && electron-builder --win",
-    "build:mac": "npm run build && electron-builder --mac",
-    "build:linux": "npm run build && electron-builder --linux",
+    "build:win": "pnpm run build && electron-builder --win",
+    "build:mac": "pnpm run build && electron-builder --mac",
+    "build:linux": "pnpm run build && electron-builder --linux",
     "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "tsc"
   },

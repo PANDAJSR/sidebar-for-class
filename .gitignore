@@ -52,5 +52,6 @@ release/
 
 
 data/config.json
+data/session-data/
 
 config.json

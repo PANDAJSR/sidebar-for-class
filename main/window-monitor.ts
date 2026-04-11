@@ -15,6 +15,23 @@ class WindowMonitor extends EventEmitter {
   private psProcess: ChildProcess | null = null;
   private isStarted = false;
 
+  private normalizePowerShellError(raw: string): string {
+    let cleaned = raw.replace(/\u0000/g, '').trim();
+    if (cleaned.includes('#< CLIXML')) {
+      cleaned = cleaned
+        .replace(/#<\s*CLIXML/gi, '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/_x000D__x000A_/g, ' ')
+        .replace(/_x[0-9A-Fa-f]{4}_/g, ' ')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+    return cleaned;
+  }
+
   start(): void {
     if (this.isStarted) return;
     this.isStarted = true;
@@ -175,13 +192,11 @@ try {
     });
 
     this.psProcess.stderr?.on('data', (data: Buffer) => {
-        let errStr = data.toString();
-        if (errStr.includes('#< CLIXML')) {
-            errStr = errStr.replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
+        const errStr = this.normalizePowerShellError(data.toString());
+        if (!errStr || errStr === '#< CLIXML') {
+            return;
         }
-        if (errStr) {
-            console.error(`[Window Monitor] PS Error: ${errStr}`);
-        }
+        console.error(`[Window Monitor] PS Error: ${errStr}`);
     });
 
     this.psProcess.on('exit', (code) => {

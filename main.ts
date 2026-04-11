@@ -1,6 +1,7 @@
 import { app } from 'electron';
 import * as os from 'os';
 import * as path from 'path';
+import * as fs from 'fs';
 import { spawn, ChildProcess } from 'child_process';
 import { createLogger, getLogFilePath, resolveLogDir, serializeError } from './main/logger';
 import { createWindow } from './main/window';
@@ -14,6 +15,28 @@ const log = createLogger('main');
 
 let guardianProcess: ChildProcess | null = null;
 let isQuitting = false;
+
+function configureRuntimePaths(): void {
+  const dataDir = getDataDir();
+  const sessionDataDir = path.join(dataDir, 'session-data');
+  const cacheDir = path.join(sessionDataDir, 'Cache');
+
+  try {
+    fs.mkdirSync(cacheDir, { recursive: true });
+    app.setPath('sessionData', sessionDataDir);
+    app.commandLine.appendSwitch('disk-cache-dir', cacheDir);
+    log.info('runtime.paths.configured', {
+      sessionDataDir,
+      cacheDir
+    });
+  } catch (error) {
+    log.warn('runtime.paths.configure.failed', {
+      error: serializeError(error),
+      sessionDataDir,
+      cacheDir
+    });
+  }
+}
 
 function logBootContext(): void {
   log.info('bootstrap.process', {
@@ -262,6 +285,7 @@ function startGuardian(): void {
   });
 }
 
+configureRuntimePaths();
 logBootContext();
 registerGlobalErrorHandlers();
 registerLifecycleEventLoggers();
