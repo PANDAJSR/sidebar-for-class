@@ -19,7 +19,6 @@ interface SidebarConfig {
         y: number;
         height: number;
     };
-    auto_hide?: boolean;
 }
 
 interface DraggingState {
@@ -112,13 +111,13 @@ const useExternalDrag = (
         };
 
         const onWindowMouseDown = (e: MouseEvent) => {
-            if (isExpanded && sidebarRef.current && !sidebarRef.current.contains(e.target as Node) && config?.auto_hide) {
+            if (isExpanded && sidebarRef.current && !sidebarRef.current.contains(e.target as Node) && config?.transforms?.auto_hide) {
                 collapse();
             }
         };
 
         const onBlur = () => {
-            if (isExpanded && config?.auto_hide) collapse();
+            if (isExpanded && config?.transforms?.auto_hide) collapse();
         };
 
         window.addEventListener('dragenter', onDragEnter);

@@ -29,10 +29,30 @@ function createWindow(): BrowserWindow {
   const initialWidth = Math.floor(panelWidth * scale + 100);
   const initialHeight = Math.ceil(panelHeight * scale + 40);
 
-  let yPos = screenBounds.y + (transforms.posy || 0) - (initialHeight / 2);
+  const rawY = screenBounds.y + (transforms.posy || 0) - (initialHeight / 2);
+  let yPos = rawY;
   yPos = calculateWindowYPosition(yPos, initialHeight, screenBounds);
 
-  const xPos = screenBounds.x;
+  const rawX = screenBounds.x;
+  const xPos = calculateWindowXPosition(rawX, initialWidth, screenBounds);
+
+  log.info('create-main-window.config', {
+    transforms,
+    panel: { width: panelWidth, height: panelHeight },
+    scale
+  });
+
+  log.info('create-main-window.position', {
+    displayIndex: transforms.display || 0,
+    screenBounds,
+    initialWidth,
+    initialHeight,
+    posy: transforms.posy || 0,
+    rawX,
+    rawY,
+    adjustedX: xPos,
+    adjustedY: yPos
+  });
 
   const windowOptions: Electron.BrowserWindowConstructorOptions = {
     width: initialWidth,
@@ -168,12 +188,25 @@ function resizeMainWindow(width: number, height: number, y: number | null = null
   const targetDisplay = getTargetDisplay(transforms.display);
   const screenBounds = targetDisplay.bounds;
 
-  const newY = (typeof y === 'number')
+  const rawY = (typeof y === 'number')
     ? y
     : Math.floor(screenBounds.y + transforms.posy - height / 2);
 
-  const adjustedY = calculateWindowYPosition(newY, height, screenBounds);
-  const adjustedX = calculateWindowXPosition(screenBounds.x, width, screenBounds);
+  const adjustedY = calculateWindowYPosition(rawY, height, screenBounds);
+  const rawX = screenBounds.x;
+  const adjustedX = calculateWindowXPosition(rawX, width, screenBounds);
+
+  log.info('main-window.resize.request', {
+    width,
+    height,
+    inputY: y,
+    transforms,
+    screenBounds,
+    rawX,
+    rawY,
+    adjustedX,
+    adjustedY
+  });
 
   mainWindow.setBounds({
     width: Math.floor(width),

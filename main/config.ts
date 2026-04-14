@@ -42,9 +42,14 @@ function getConfigSync(): typeof DEFAULT_CONFIG {
     try {
       const content = fs.readFileSync(CONFIG_PATH, 'utf8');
       const parsed = JSON.parse(content);
-      log.debug('config.read.success', {
+      log.info('config.read.success', {
         configPath: CONFIG_PATH,
-        bytes: Buffer.byteLength(content, 'utf8')
+        bytes: Buffer.byteLength(content, 'utf8'),
+        summary: {
+          transforms: parsed?.transforms || null,
+          widgetsCount: Array.isArray(parsed?.widgets) ? parsed.widgets.length : 0,
+          helperTools: parsed?.helper_tools || null
+        }
       });
       return parsed;
     } catch (e) {
