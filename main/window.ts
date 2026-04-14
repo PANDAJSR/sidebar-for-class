@@ -35,6 +35,8 @@ function createWindow(): BrowserWindow {
 
   const rawX = screenBounds.x;
   const xPos = calculateWindowXPosition(rawX, initialWidth, screenBounds);
+  const finalX = Math.floor(xPos);
+  const finalY = Math.floor(yPos);
 
   log.info('create-main-window.config', {
     transforms,
@@ -51,14 +53,16 @@ function createWindow(): BrowserWindow {
     rawX,
     rawY,
     adjustedX: xPos,
-    adjustedY: yPos
+    adjustedY: yPos,
+    finalX,
+    finalY
   });
 
   const windowOptions: Electron.BrowserWindowConstructorOptions = {
     width: initialWidth,
     height: initialHeight,
-    x: xPos,
-    y: yPos,
+    x: finalX,
+    y: finalY,
     frame: false,
     transparent: true,
     alwaysOnTop: true,
@@ -100,7 +104,8 @@ function createWindow(): BrowserWindow {
 
   mainWindow = new BrowserWindow(windowOptions);
   log.info('create-main-window.created', {
-    windowId: mainWindow.id
+    windowId: mainWindow.id,
+    initialBounds: mainWindow.getBounds()
   });
 
   mainWindow.setVisibleOnAllWorkspaces(true);
@@ -122,7 +127,17 @@ function createWindow(): BrowserWindow {
   }
 
   mainWindow.on('ready-to-show', () => {
-    log.info('main-window.ready-to-show', { windowId: mainWindow!.id });
+    if (!mainWindow) return;
+    mainWindow.setBounds({
+      x: finalX,
+      y: finalY,
+      width: initialWidth,
+      height: initialHeight
+    });
+    log.info('main-window.ready-to-show', {
+      windowId: mainWindow.id,
+      bounds: mainWindow.getBounds()
+    });
     mainWindow!.show();
   });
   mainWindow.on('blur', () => {
