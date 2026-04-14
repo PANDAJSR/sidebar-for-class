@@ -321,6 +321,10 @@ app.whenReady()
       }
     });
 
+    await runInitStep('register-ipc-handlers', async () => {
+      registerIPCHandlers();
+    });
+
     await runInitStep('create-main-window', async () => {
       const mainWindow = createWindow();
       log.info('main-window.created', {
@@ -349,10 +353,6 @@ app.whenReady()
     await runInitStep('start-killer', async () => {
       startKiller();
       log.info('killer.started', { platform: process.platform });
-    });
-
-    await runInitStep('register-ipc-handlers', async () => {
-      registerIPCHandlers();
     });
 
     await runInitStep('register-display-listeners', async () => {

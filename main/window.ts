@@ -3,7 +3,7 @@ import * as path from 'path';
 import { isDev } from './constants';
 import { getTargetDisplay, calculateWindowYPosition, calculateWindowXPosition } from './display';
 import { getConfigSync } from './config';
-import { createLogger } from './logger';
+import { createLogger, serializeError } from './logger';
 
 const log = createLogger('window');
 
@@ -12,6 +12,55 @@ let settingsWindow: BrowserWindow | null = null;
 let shouldAlwaysOnTop = true;
 let topInterval: NodeJS.Timeout | null = null;
 let timerWindow: BrowserWindow | null = null;
+
+function attachRendererDiagnostics(win: BrowserWindow): void {
+  const { webContents } = win;
+
+  webContents.on('console-message', (_event, level, message, line, sourceId) => {
+    log.info('renderer.console', {
+      windowId: win.id,
+      level,
+      message,
+      line,
+      sourceId
+    });
+  });
+
+  webContents.on('did-finish-load', () => {
+    log.info('renderer.did-finish-load', {
+      windowId: win.id,
+      url: webContents.getURL()
+    });
+  });
+
+  webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+    log.error('renderer.did-fail-load', {
+      windowId: win.id,
+      errorCode,
+      errorDescription,
+      validatedURL,
+      isMainFrame
+    });
+  });
+
+  webContents.on('dom-ready', async () => {
+    try {
+      const hasApi = await webContents.executeJavaScript('!!window.electronAPI', true);
+      const hasSidebar = await webContents.executeJavaScript('!!document.getElementById(\"sidebar\")', true);
+      log.info('renderer.dom-ready.check', {
+        windowId: win.id,
+        url: webContents.getURL(),
+        hasElectronApi: Boolean(hasApi),
+        hasSidebarElement: Boolean(hasSidebar)
+      });
+    } catch (error) {
+      log.error('renderer.dom-ready.check.failed', {
+        windowId: win.id,
+        error: serializeError(error)
+      });
+    }
+  });
+}
 
 function createWindow(): BrowserWindow {
   log.info('create-main-window.start');
@@ -103,6 +152,7 @@ function createWindow(): BrowserWindow {
   });
 
   mainWindow = new BrowserWindow(windowOptions);
+  attachRendererDiagnostics(mainWindow);
   log.info('create-main-window.created', {
     windowId: mainWindow.id,
     initialBounds: mainWindow.getBounds()

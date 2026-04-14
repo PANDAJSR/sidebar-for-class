@@ -108,13 +108,23 @@ function registerIPCHandlers(): void {
     createTimerWindow();
   });
 
-  ipcMain.handle('get-config', async () => {
+  ipcMain.handle('get-config', async (event) => {
+    log.info('get-config.request', {
+      senderId: event.sender.id,
+      url: event.sender.getURL()
+    });
     const config = getConfigSync();
     const displays = getAllDisplays();
     const targetDisplay = (config.transforms?.display < displays.length)
       ? displays[config.transforms.display]
       : screen.getPrimaryDisplay();
-    return { ...config, displayBounds: targetDisplay.bounds };
+    const response = { ...config, displayBounds: targetDisplay.bounds };
+    log.info('get-config.response', {
+      senderId: event.sender.id,
+      transforms: response.transforms || null,
+      widgetsCount: Array.isArray(response.widgets) ? response.widgets.length : 0
+    });
+    return response;
   });
 
   ipcMain.on('update-config', (event, newConfig) => {
