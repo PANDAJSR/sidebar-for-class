@@ -160,6 +160,20 @@ function createWindow(): BrowserWindow {
 
   mainWindow.setVisibleOnAllWorkspaces(true);
 
+  // macOS: transparent 窗口的透明像素不会自动穿透点击（Windows 会）。
+  // 这里把初始状态设为"忽略并转发"，让透明区域在第一次 mousemove 之前就能穿透。
+  // 渲染进程的 useSidebarMouseIgnore 会在光标进入 sidebar 实体时把它切回 false。
+  // 仅 macOS：Windows 上透明像素本就自动穿透，且需要保留默认的"不忽略"初值，
+  // 以免 sidebar 在首次 mousemove 之前吃不到点击。
+  if (process.platform === 'darwin') {
+    mainWindow.setIgnoreMouseEvents(true, { forward: true });
+    log.info('create-main-window.initial-ignore-mouse', {
+      platform: process.platform,
+      ignore: true,
+      forward: true
+    });
+  }
+
   if (process.platform === 'win32') {
     startTopInterval();
   }
@@ -189,6 +203,11 @@ function createWindow(): BrowserWindow {
       bounds: mainWindow.getBounds()
     });
     mainWindow!.show();
+
+    // macOS 在 show/焦点切换后可能重置 ignore 状态，这里重新设回"穿透并转发"。
+    if (process.platform === 'darwin') {
+      mainWindow.setIgnoreMouseEvents(true, { forward: true });
+    }
   });
   mainWindow.on('blur', () => {
     if (shouldAlwaysOnTop) {

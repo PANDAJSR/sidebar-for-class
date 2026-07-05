@@ -92,7 +92,6 @@ function registerIPCHandlers(): void {
   });
 
   ipcMain.on('set-ignore-mouse', (event, ignore, forward) => {
-    if (process.platform === 'darwin') return;
     setIgnoreMouseEvents(ignore, forward);
   });
 
