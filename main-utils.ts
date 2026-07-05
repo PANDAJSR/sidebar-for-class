@@ -14,6 +14,7 @@ function getLoudness(): typeof import('loudness') | null {
 }
 
 function getExePathFromProtocol(protocol: string): string | null {
+    if (process.platform !== 'win32') return null;
     try {
         const regPath = `HKEY_CLASSES_ROOT\\${protocol}\\shell\\open\\command`;
         const output = execSync(`reg query "${regPath}" /ve`, { encoding: 'utf8' });

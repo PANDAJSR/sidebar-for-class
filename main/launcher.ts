@@ -109,6 +109,15 @@ async function launchApp(target: string, args: string[] = []): Promise<void> {
 }
 
 async function getFileIcon(filePath: string, app: Electron.App): Promise<string | null> {
+  // macOS 26/Tahoe beta 上 Electron 的 app.getFileIcon 会在 V8 后台线程触发
+  // EXC_BREAKPOINT（v8::ValueSerializer / node::StreamBase 区域的 CHECK 失败），
+  // 导致主进程崩溃。本应用的 launcher 目标均为 Windows 可执行文件
+  // （explorer.exe / notepad.exe / classisland://... 等），在 macOS 下本就取不到
+  // 有效图标，因此非 Windows 平台直接返回 null，规避崩溃。
+  if (process.platform !== 'win32') {
+    return null;
+  }
+
   try {
     let resolvedPath = filePath;
 
